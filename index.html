@@ -114,9 +114,13 @@
 }
 
 @media (max-width: 768px) {
-    /* Conteneur principal */
-    .container {
+    /* Styles généraux */
+    body {
         padding: 10px;
+    }
+
+    .container {
+        padding: 0;
         width: 100%;
         max-width: 100%;
     }
@@ -124,7 +128,8 @@
     /* Écran de menu */
     .menu {
         padding: 15px;
-        width: 95%;
+        width: 100%;
+        max-width: 100%;
         margin: 0 auto;
     }
 
@@ -146,26 +151,29 @@
         padding: 0;
     }
 
-    /* En-tête du jeu, Conteneur de la grille, Liste des mots */
-    .game-header,
-    .grid-container,
-    .word-list {
-        width: 95%;
-        margin: 0 auto;
-    }
-
     /* En-tête du jeu */
     .game-header {
-        height: auto;
-        min-height: 48px;
-        padding: 10px 0;
-        margin-bottom: 15px;
         display: flex;
         align-items: center;
         justify-content: center;
         position: relative;
+        padding: 10px 0;
+        width: 100%;
+        margin: 0 auto 15px;
         background: white;
         border-radius: 10px;
+    }
+
+    #backToMenu {
+        position: absolute;
+        left: 10px;
+        padding: 5px 10px;
+        font-size: 1em;
+        height: auto;
+        background: none;
+        border: none;
+        color: var(--primary-color);
+        cursor: pointer;
     }
 
     .game-title {
@@ -175,144 +183,97 @@
         margin: 0;
     }
 
-    #backToMenu {
-        position: absolute;
-        left: 10px;
-        font-size: 0.9em;
-        padding: 5px 10px;
-        height: 32px;
-        background: none;
-        border: none;
-        color: var(--primary-color);
-        cursor: pointer;
-        z-index: 2;
-    }
-
     /* Conteneur de la grille */
     .grid-container {
+        width: 100%;
+        margin: 0 auto;
         padding: 0;
-        overflow: visible;
+        overflow: hidden;
         background: white;
         border-radius: 10px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         display: flex;
         justify-content: center;
-        align-items: center;
-        width: 95%;
-        margin: 0 auto;
     }
 
     /* Grille de jeu */
     .word-grid {
         display: grid;
-        gap: 5px;
+        gap: 2px;
         margin: 0 auto;
         width: 100%;
     }
 
-    /* Ajustements pour les petites grilles (5x5 et 7x7) */
-    .word-grid[data-grid-size="5"] {
-        grid-template-columns: repeat(5, 1fr);
-    }
-
-    .word-grid[data-grid-size="7"] {
-        grid-template-columns: repeat(7, 1fr);
-    }
-
-    .word-grid[data-grid-size="5"] .grid-cell,
-    .word-grid[data-grid-size="7"] .grid-cell {
-        width: 100%;
-        height: 0;
-        padding-bottom: 100%; /* Rend les cellules carrées */
-        font-size: 1.5em;
-    }
-
-    /* Ajustements pour les grandes grilles (9x9, 11x11, 13x13) */
+    /* Ajustements pour toutes les grilles */
+    .word-grid[data-grid-size="5"],
+    .word-grid[data-grid-size="7"],
     .word-grid[data-grid-size="9"],
     .word-grid[data-grid-size="11"],
     .word-grid[data-grid-size="13"] {
-        grid-template-columns: repeat(auto-fill, minmax(30px, 1fr));
+        grid-template-columns: repeat(var(--grid-size), 1fr);
     }
 
-    .word-grid[data-grid-size="9"] .grid-cell,
-    .word-grid[data-grid-size="11"] .grid-cell,
-    .word-grid[data-grid-size="13"] .grid-cell {
+    .grid-cell {
         width: 100%;
-        height: 30px;
-        font-size: 1em;
+        padding-bottom: 100%; /* Rend les cellules carrées */
+        font-size: calc(3vw); /* Taille de police responsive */
     }
 
-    /* Assurer le défilement pour les grandes grilles */
-    .grid-container {
-        overflow: auto;
-        -webkit-overflow-scrolling: touch;
+    /* Ajustement des tailles de police selon la taille de la grille */
+    .word-grid[data-grid-size="5"] .grid-cell {
+        font-size: 6vw;
+    }
+
+    .word-grid[data-grid-size="7"] .grid-cell {
+        font-size: 5vw;
+    }
+
+    .word-grid[data-grid-size="9"] .grid-cell {
+        font-size: 4vw;
+    }
+
+    .word-grid[data-grid-size="11"] .grid-cell {
+        font-size: 3.5vw;
+    }
+
+    .word-grid[data-grid-size="13"] .grid-cell {
+        font-size: 3vw;
     }
 
     /* Liste des mots */
     .word-list {
+        width: 100%;
+        margin: 15px auto;
         padding: 15px;
-        height: auto;
-        max-height: 40vh;
-        overflow-y: auto;
-        margin-top: 15px;
         background: white;
         border-radius: 10px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-
-    .words {
+        max-height: 40vh;
         overflow-y: auto;
     }
 
     .word-item {
-        list-style-type: none;
         padding: 12px;
         border-bottom: 1px solid var(--border-color);
-        margin: 0;
         font-size: 1.2em;
     }
 
-    /* Fenêtre de confirmation */
-    .validation-modal {
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: 90%;
-        max-width: 300px;
-        z-index: 1001;
-        padding: 20px;
-    }
-
-    .modal-buttons {
-        gap: 8px;
-        display: flex;
-        justify-content: center;
-        margin-top: 15px;
-    }
-
-    /* Message de fin */
+    /* Ajustements pour les modales */
+    .validation-modal,
     .completion-message {
         width: 90%;
         max-width: 300px;
         padding: 20px;
     }
 
-    .completion-message .stats {
-        margin: 15px 0;
-        padding: 15px;
-        background: #f5f5f5;
-        border-radius: 8px;
+    .modal-buttons {
+        display: flex;
+        gap: 8px;
+        justify-content: center;
+        margin-top: 15px;
     }
 
-    .completion-message .time {
-        font-size: 1.5em;
-        color: var(--primary-color);
-        font-weight: 600;
-        margin: 10px 0;
-    }
-
-    /* Footer avec le timer et le compteur */
+    /* Footer */
     .status-footer {
         padding: 10px 0;
     }
@@ -320,29 +281,6 @@
     .progress-counter,
     .timer {
         font-size: 1.1em;
-    }
-
-    /* Overlay */
-    .overlay {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0,0,0,0.5);
-        z-index: 999;
-    }
-
-    /* Ajustements pour l'orientation paysage */
-    @media (orientation: landscape) {
-        .word-list {
-            max-height: 60vh;
-        }
-
-        .grid-container {
-            max-height: 60vh;
-        }
     }
 }
 
@@ -366,11 +304,10 @@
         }
 
         .grid-cell {
-    /* Remove width and height */
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 2em;
+    font-size: 2em; /* Vous pouvez ajuster cette valeur selon vos préférences */
     cursor: pointer;
     user-select: none;
     transition: all 0.3s ease;
@@ -6768,23 +6705,12 @@ function renderGrid() {
     const wordGrid = document.getElementById('wordGrid');
     if (!wordGrid) return;
 
-    // Add data-grid-size attribute
+    // Ajouter l'attribut data-grid-size et la variable CSS
     wordGrid.setAttribute('data-grid-size', gameState.gridSize);
+    wordGrid.style.setProperty('--grid-size', gameState.gridSize);
 
-    const isMobile = window.innerWidth <= 768;
-
-    // Clear existing grid
+    // Effacer la grille existante
     wordGrid.innerHTML = '';
-
-    if (isMobile && (gameState.gridSize === 5 || gameState.gridSize === 7)) {
-        // For small grids on mobile, use responsive sizing
-        const numColumns = gameState.gridSize;
-        wordGrid.style.gridTemplateColumns = `repeat(${numColumns}, 1fr)`;
-    } else {
-        // For larger grids or desktop
-        const cellSize = isMobile ? 30 : 60;
-        wordGrid.style.gridTemplateColumns = `repeat(${gameState.gridSize}, ${cellSize}px)`;
-    }
 
     gameState.currentGrid.forEach((row, i) => {
         row.forEach((cell, j) => {
@@ -6794,7 +6720,7 @@ function renderGrid() {
             cellElement.dataset.row = i;
             cellElement.dataset.col = j;
 
-            // Apply 'found' class if the word has been found
+            // Appliquer la classe 'found' si le mot a été trouvé
             const isFound = gameState.wordPlacements.some(placement => {
                 if (gameState.foundWords.has(placement.word)) {
                     const cells = getCellsForPlacement(placement);
