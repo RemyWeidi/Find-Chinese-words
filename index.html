@@ -114,33 +114,148 @@
 }
 
 @media (max-width: 768px) {
+    /* Conteneur principal */
     .container {
         padding: 10px;
         width: 100%;
         max-width: 100%;
     }
 
+    /* Écran de menu */
+    .menu {
+        padding: 15px;
+        width: 95%;
+        margin: 0 auto;
+    }
+
+    .options-buttons {
+        grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+        gap: 8px;
+    }
+
+    .options-buttons button {
+        padding: 8px;
+        font-size: 0.9em;
+        height: 36px;
+    }
+
+    /* Conteneur du jeu */
     .game-container {
         max-width: 100%;
         margin: 0 auto;
         padding: 0;
     }
 
-    .game-content {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 20px;
-        width: calc(100% - 40px);
-        max-width: none;
+    /* En-tête du jeu, Conteneur de la grille, Liste des mots */
+    .game-header,
+    .grid-container,
+    .word-list {
+        width: 95%;
+        margin: 0 auto;
     }
 
+    /* En-tête du jeu */
     .game-header {
-        width: calc(100% - 40px);
-        max-width: none;
-        margin: 0 auto 20px;
+        height: auto;
+        min-height: 48px;
+        padding: 0 15px;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
     }
 
+    .game-title {
+        font-size: 1.2em;
+        text-align: center;
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    #backToMenu {
+        font-size: 0.9em;
+        padding: 5px 10px;
+        height: 32px;
+        z-index: 2;
+    }
+
+    /* Conteneur de la grille */
+    .grid-container {
+        padding: 0;
+        overflow: auto;
+        -webkit-overflow-scrolling: touch;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    /* Grille de jeu */
+    .word-grid {
+        display: grid;
+        gap: 5px;
+        margin: 0 auto;
+    }
+
+    /* Ajustements pour les petites grilles (5x5 et 7x7) */
+    .word-grid[data-grid-size="5"],
+    .word-grid[data-grid-size="7"] {
+        grid-template-columns: repeat(auto-fill, minmax(0, 1fr));
+    }
+
+    .word-grid[data-grid-size="5"] .grid-cell,
+    .word-grid[data-grid-size="7"] .grid-cell {
+        width: 100%;
+        height: 0;
+        padding-bottom: 100%; /* Pour des cellules carrées */
+        font-size: 1.5em;
+    }
+
+    /* Ajustements pour les grandes grilles (9x9, 11x11, 13x13) */
+    .word-grid[data-grid-size="9"],
+    .word-grid[data-grid-size="11"],
+    .word-grid[data-grid-size="13"] {
+        grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+    }
+
+    .word-grid[data-grid-size="9"] .grid-cell,
+    .word-grid[data-grid-size="11"] .grid-cell,
+    .word-grid[data-grid-size="13"] .grid-cell {
+        width: 100%;
+        height: 40px;
+        font-size: 1.1em;
+    }
+
+    /* Assurer le défilement pour les grandes grilles */
+    .grid-container {
+        overflow: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Liste des mots */
+    .word-list {
+        padding: 15px;
+        height: auto;
+        max-height: 40vh;
+        overflow-y: auto;
+        margin-bottom: 15px;
+    }
+
+    .words {
+        overflow-y: auto;
+    }
+
+    .word-item {
+        list-style-type: none;
+        padding: 12px;
+        border-bottom: 1px solid var(--border-color);
+        margin: 0;
+    }
+
+    /* Fenêtre de confirmation */
     .validation-modal {
         position: fixed;
         top: 50%;
@@ -151,31 +266,49 @@
         z-index: 1001;
     }
 
-    .word-list {
-        width: 100%;
-        max-width: calc(100vw - 20px);
-        margin: 0 auto;
+    .modal-buttons {
+        gap: 8px;
+        display: flex;
+        justify-content: center;
     }
 
-    .word-item {
-        list-style-type: none;
-        padding: 12px;
-        border-bottom: 1px solid var(--border-color);
-        margin: 0;
+    /* Message de fin */
+    .completion-message {
+        width: 90%;
+        max-width: 300px;
+        padding: 20px;
     }
 
-    .grid-container {
-        width: 100%;
-        max-width: calc(100vw - 20px);
-        margin: 0 auto;
-        overflow: auto;
+    /* Footer avec le timer et le compteur */
+    .status-footer {
+        padding: 10px 0;
     }
 
-    /* Ajuster la taille des cellules pour le mobile */
-    .grid-cell {
-        width: 45px;
-        height: 45px;
-        font-size: 1.5em;
+    .progress-counter,
+    .timer {
+        font-size: 1.1em;
+    }
+
+    /* Overlay */
+    .overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.5);
+        z-index: 1000;
+    }
+
+    /* Ajustements pour l'orientation paysage */
+    @media (orientation: landscape) {
+        .word-list {
+            max-height: 60vh;
+        }
+
+        .grid-container {
+            max-height: 60vh;
+        }
     }
 }
 
@@ -6600,16 +6733,21 @@ function resetGame() {
 
 function renderGrid() {
     const wordGrid = document.getElementById('wordGrid');
+    if (!wordGrid) return;
+
+    // Ajouter l'attribut data-grid-size
+    wordGrid.setAttribute('data-grid-size', gameState.gridSize);
+
     const isMobile = window.innerWidth <= 768;
     const cellSize = isMobile ? 45 : 60; // Taille adaptative selon le device
-    
+
     wordGrid.style.gridTemplateColumns = `repeat(${gameState.gridSize}, ${cellSize}px)`;
     const totalSize = (gameState.gridSize * cellSize) + ((gameState.gridSize - 1) * 5);
     wordGrid.style.width = `${totalSize}px`;
     wordGrid.style.height = `${totalSize}px`;
-    
+
     wordGrid.innerHTML = '';
-    
+
     gameState.currentGrid.forEach((row, i) => {
         row.forEach((cell, j) => {
             const cellElement = document.createElement('div');
@@ -6617,7 +6755,7 @@ function renderGrid() {
             cellElement.textContent = cell;
             cellElement.dataset.row = i;
             cellElement.dataset.col = j;
-            
+
             // Réappliquer la classe 'found' pour les mots trouvés
             const isFound = gameState.wordPlacements.some(placement => {
                 if (gameState.foundWords.has(placement.word)) {
@@ -6626,15 +6764,16 @@ function renderGrid() {
                 }
                 return false;
             });
-            
+
             if (isFound) {
                 cellElement.classList.add('found');
             }
-            
+
             wordGrid.appendChild(cellElement);
         });
     });
 }
+
 
 function renderWordsList() {
     const wordsList = document.getElementById('wordsList');
