@@ -114,68 +114,25 @@
 }
 
 @media (max-width: 768px) {
-    .container {
-        padding: 10px;
-        width: 100%;
-        max-width: 100%;
-    }
-
     .game-container {
-        max-width: 100%;
-        margin: 0 auto;
-        padding: 0;
+        margin: 20px auto 0;
     }
-
+    
     .game-content {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 20px;
-        width: calc(100% - 40px);
-        max-width: none;
+        grid-template-columns: 1fr;
     }
-
+    
     .game-header {
-        width: calc(100% - 40px);
-        max-width: none;
-        margin: 0 auto 20px;
+        padding: 10px 15px;
     }
-
-    .validation-modal {
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: 90%;
-        max-width: 300px;
-        z-index: 1001;
+    
+    #backToMenu {
+        min-width: auto;
+        padding: 6px 10px;
     }
-
-    .word-list {
-        width: 100%;
-        max-width: calc(100vw - 20px);
-        margin: 0 auto;
-    }
-
-    .word-item {
-        list-style-type: none;
-        padding: 12px;
-        border-bottom: 1px solid var(--border-color);
-        margin: 0;
-    }
-
-    .grid-container {
-        width: 100%;
-        max-width: calc(100vw - 20px);
-        margin: 0 auto;
-        overflow: auto;
-    }
-
-    /* Ajuster la taille des cellules pour le mobile */
-    .grid-cell {
-        width: 45px;
-        height: 45px;
-        font-size: 1.5em;
+    
+    .header-spacer {
+        min-width: auto;
     }
 }
 
@@ -225,9 +182,9 @@
         }
 
         .grid-cell.found {
-    background-color: var(--success-color) !important;
-    color: white !important;
-}
+            background: var(--success-color);
+            color: white;
+        }
 
         .word-list {
             background: white;
@@ -6037,7 +5994,7 @@ function getWordsForCurrentLevel() {
     // Reset initial game state
     gameState.mode = 'no_hint';
     gameState.gridSize = 5;
-    gameState.selectedHskLevels = new Set([1]);
+    gameState.selectedHskLevels = new Set([1]); // Default to HSK1
     gameState.selectedCells = [];
     gameState.wordsToFind = [];
     gameState.foundWords = new Set();
@@ -6046,7 +6003,7 @@ function getWordsForCurrentLevel() {
     gameState.startTime = null;
     gameState.timerInterval = null;
 
-    // Update game screen structure
+    // Update game screen structure with header-spacer class
     const gameScreen = document.getElementById('gameScreen');
     if (gameScreen) {
         gameScreen.innerHTML = `
@@ -6071,6 +6028,8 @@ function getWordsForCurrentLevel() {
         `;
     }
 
+    // Le reste de la fonction initializeGame reste identique
+    
     // Initialize HSK level buttons with multiple selection
     document.querySelectorAll('#hskLevelButtons button').forEach(button => {
         button.addEventListener('click', () => {
@@ -6108,7 +6067,7 @@ function getWordsForCurrentLevel() {
         });
     });
 
-    // Initialize start game button
+    // Initialize main control buttons
     const startGameButton = document.getElementById('startGame');
     startGameButton.addEventListener('click', () => {
         if (gameState.selectedHskLevels.size === 0) {
@@ -6132,20 +6091,7 @@ function getWordsForCurrentLevel() {
         });
     }
 
-    // Initialize word grid click handler
-    const wordGrid = document.getElementById('wordGrid');
-    if (wordGrid) {
-        wordGrid.addEventListener('click', (event) => {
-            const cell = event.target;
-            if (cell.classList.contains('grid-cell')) {
-                const row = parseInt(cell.dataset.row);
-                const col = parseInt(cell.dataset.col);
-                handleCellClick(row, col);
-            }
-        });
-    }
-
-    // Initialize modal buttons
+    // Initialize word selection confirmation buttons
     const confirmSelectionButton = document.getElementById('confirmSelection');
     if (confirmSelectionButton) {
         confirmSelectionButton.addEventListener('click', confirmSelection);
@@ -6162,6 +6108,19 @@ function getWordsForCurrentLevel() {
         newGameButton.addEventListener('click', () => {
             hideCompletionMessage();
             showMenu();
+        });
+    }
+
+    // Initialize grid cell click handler
+    const wordGrid = document.getElementById('wordGrid');
+    if (wordGrid) {
+        wordGrid.addEventListener('click', (event) => {
+            const cell = event.target;
+            if (cell.classList.contains('grid-cell')) {
+                const row = parseInt(cell.dataset.row);
+                const col = parseInt(cell.dataset.col);
+                handleCellClick(row, col);
+            }
         });
     }
 
@@ -6189,61 +6148,12 @@ function getWordsForCurrentLevel() {
         }
     });
 
-    // Window resize and orientation change handlers
+    // Add window resize handler
     window.addEventListener('resize', () => {
         if (gameState.currentGrid.length > 0) {
             renderGrid();
-            reapplyFoundWordsStyles();
         }
     });
-
-    window.addEventListener('orientationchange', () => {
-        if (gameState.currentGrid.length > 0) {
-            setTimeout(() => {
-                renderGrid();
-                reapplyFoundWordsStyles();
-            }, 200);
-        }
-    });
-
-    // Mobile-specific event handlers
-    let lastTouchEnd = 0;
-    document.addEventListener('touchend', (event) => {
-        const now = Date.now();
-        if (now - lastTouchEnd <= 300) {
-            event.preventDefault();
-        }
-        lastTouchEnd = now;
-    }, false);
-
-    document.addEventListener('scroll', () => {
-        if (gameState.currentGrid.length > 0) {
-            requestAnimationFrame(reapplyFoundWordsStyles);
-        }
-    });
-
-    // Prevent unwanted zoom gestures
-    document.addEventListener('gesturestart', (e) => e.preventDefault());
-    document.addEventListener('gesturechange', (e) => e.preventDefault());
-    document.addEventListener('gestureend', (e) => e.preventDefault());
-    document.addEventListener('dblclick', (e) => e.preventDefault(), { passive: false });
-
-    // Helper function to reapply styles for found words
-    function reapplyFoundWordsStyles() {
-        gameState.wordPlacements.forEach(placement => {
-            if (gameState.foundWords.has(placement.word)) {
-                const cells = getCellsForPlacement(placement);
-                cells.forEach(pos => {
-                    const cell = document.querySelector(
-                        `[data-row="${pos.row}"][data-col="${pos.col}"]`
-                    );
-                    if (cell) {
-                        cell.classList.add('found');
-                    }
-                });
-            }
-        });
-    }
 
     // Verify word lists availability
     const availableWordLists = [hsk1Words].filter(list => list && list.length > 0);
@@ -6264,97 +6174,23 @@ function getWordsForCurrentLevel() {
 function startGame() {
     // Cacher le menu et montrer l'écran de jeu
     document.getElementById('menuScreen').style.display = 'none';
-    const gameScreen = document.getElementById('gameScreen');
-    gameScreen.style.display = 'block';
+    document.getElementById('gameScreen').style.display = 'block';
     
     // Réinitialiser l'état du jeu
     gameState.foundWords.clear();
     gameState.selectedCells = [];
-
-    // S'assurer que le gameScreen est visible avant les calculs
-    requestAnimationFrame(() => {
-        // Récupérer les éléments nécessaires
-        const gameContent = document.querySelector('.game-content');
-        const gameHeader = document.querySelector('.game-header');
-        const gridContainer = document.querySelector('.grid-container');
-        const wordList = document.querySelector('.word-list');
-        const wordGrid = document.getElementById('wordGrid');
-
-        // Gérer la mise en page mobile
-        const isMobile = window.innerWidth <= 768;
-        if (isMobile) {
-            if (gameContent) {
-                gameContent.style.display = 'flex';
-                gameContent.style.flexDirection = 'column';
-                gameContent.style.alignItems = 'center';
-            }
-            
-            if (gameHeader) {
-                gameHeader.style.width = 'calc(100% - 40px)';
-                gameHeader.style.maxWidth = 'none';
-            }
-        } else {
-            // Calcul de la largeur pour desktop
-            if (gameContent && gameHeader && gridContainer && wordList) {
-                // Calculer la largeur totale (grille + liste + gap)
-                const totalWidth = gridContainer.offsetWidth + wordList.offsetWidth + 20;
-                
-                // Appliquer la largeur au header et au content
-                gameContent.style.width = `${totalWidth}px`;
-                gameHeader.style.width = `${totalWidth}px`;
-                gameHeader.style.maxWidth = `${totalWidth}px`;
-                gameHeader.style.margin = '0 auto 20px';
-            }
-        }
-
-        // Rendre la grille avec la bonne taille de cellules
-        if (wordGrid) {
-            const cellSize = isMobile ? 45 : 60;
-            const totalSize = (gameState.gridSize * cellSize) + ((gameState.gridSize - 1) * 5);
-            wordGrid.style.width = `${totalSize}px`;
-            wordGrid.style.height = `${totalSize}px`;
-            wordGrid.style.gridTemplateColumns = `repeat(${gameState.gridSize}, ${cellSize}px)`;
-        }
-
-        // Rendre la grille
-        renderGrid();
-        
-        // Attendre un court instant pour s'assurer que la grille est rendue
-        setTimeout(() => {
-            // Rendre la liste des mots
-            renderWordsList();
-            
-            // Démarrer le timer
-            startTimer();
-            
-            // Mettre à jour le compteur de progression
-            updateProgressCounter();
-
-            // Réappliquer les styles pour les mots trouvés si nécessaire
-            if (gameState.foundWords.size > 0) {
-                gameState.wordPlacements.forEach(placement => {
-                    if (gameState.foundWords.has(placement.word)) {
-                        const cells = getCellsForPlacement(placement);
-                        cells.forEach(pos => {
-                            const cell = document.querySelector(
-                                `[data-row="${pos.row}"][data-col="${pos.col}"]`
-                            );
-                            if (cell) {
-                                cell.classList.add('found');
-                            }
-                        });
-                    }
-                });
-            }
-
-            // Vérifier et ajuster une dernière fois les dimensions
-            if (!isMobile && gameContent && gameHeader && gridContainer && wordList) {
-                const finalTotalWidth = gridContainer.offsetWidth + wordList.offsetWidth + 20;
-                gameContent.style.width = `${finalTotalWidth}px`;
-                gameHeader.style.width = `${finalTotalWidth}px`;
-            }
-        }, 50);
-    });
+    
+    // Rendre la grille
+    renderGrid();
+    
+    // Rendre la liste des mots
+    renderWordsList();
+    
+    // Démarrer le timer
+    startTimer();
+    
+    // Mettre à jour le compteur de progression
+    updateProgressCounter();
 }
 
 
@@ -6600,11 +6436,12 @@ function resetGame() {
 
 function renderGrid() {
     const wordGrid = document.getElementById('wordGrid');
-    const isMobile = window.innerWidth <= 768;
-    const cellSize = isMobile ? 45 : 60; // Taille adaptative selon le device
+    const cellSize = 60; // Taille fixe des cellules
     
+    // Définir la taille de la grille
     wordGrid.style.gridTemplateColumns = `repeat(${gameState.gridSize}, ${cellSize}px)`;
-    const totalSize = (gameState.gridSize * cellSize) + ((gameState.gridSize - 1) * 5);
+    // Calculer la taille totale incluant les gaps
+    const totalSize = (gameState.gridSize * cellSize) + ((gameState.gridSize - 1) * 5); // 5px est la taille du gap
     wordGrid.style.width = `${totalSize}px`;
     wordGrid.style.height = `${totalSize}px`;
     
@@ -6617,20 +6454,6 @@ function renderGrid() {
             cellElement.textContent = cell;
             cellElement.dataset.row = i;
             cellElement.dataset.col = j;
-            
-            // Réappliquer la classe 'found' pour les mots trouvés
-            const isFound = gameState.wordPlacements.some(placement => {
-                if (gameState.foundWords.has(placement.word)) {
-                    const cells = getCellsForPlacement(placement);
-                    return cells.some(pos => pos.row === i && pos.col === j);
-                }
-                return false;
-            });
-            
-            if (isFound) {
-                cellElement.classList.add('found');
-            }
-            
             wordGrid.appendChild(cellElement);
         });
     });
@@ -6739,28 +6562,6 @@ function getCellsBetween(start, end) {
         });
     }
 
-    return cells;
-}
-
-function getCellsForPlacement(placement) {
-    const cells = [];
-    const { start, direction, word } = placement;
-    
-    let dx = 0, dy = 0;
-    switch (direction) {
-        case 'horizontal': dx = 1; break;
-        case 'horizontal-rev': dx = -1; break;
-        case 'vertical': dy = 1; break;
-        case 'vertical-rev': dy = -1; break;
-    }
-    
-    for (let i = 0; i < word.length; i++) {
-        cells.push({
-            row: start.y + (dy * i),
-            col: start.x + (dx * i)
-        });
-    }
-    
     return cells;
 }
 
