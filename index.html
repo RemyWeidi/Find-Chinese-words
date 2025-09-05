@@ -6323,9 +6323,15 @@ function showMenu() {
     // Remplir les cases vides
     const uniqueChars = new Set();
     availableWords.forEach(word => {
-        [...word.chinese].forEach(char => uniqueChars.add(char));
-    });
-    const availableChars = Array.from(uniqueChars);
+    for (const char of word.chinese) {
+        uniqueChars.add(char);
+    }
+		});
+	const availableChars = Array.from(uniqueChars);
+	
+	if (availableChars.length === 0) {
+    availableChars.push('一','人','大','中','国');
+	}
 
     for (let y = 0; y < gameState.gridSize; y++) {
         for (let x = 0; x < gameState.gridSize; x++) {
