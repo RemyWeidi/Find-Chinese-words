@@ -366,6 +366,17 @@
         .words::-webkit-scrollbar-thumb:hover {
             background: #357abd;
         }
+#pinyinTooltip {
+    position: absolute;
+    display: none;
+    padding: 4px 8px;
+    background: rgba(0,0,0,0.8);
+    color: white;
+    border-radius: 4px;
+    font-size: 0.9em;
+    pointer-events: none;
+    z-index: 2000;
+}
     </style>
 </head>
 <body>
@@ -405,6 +416,13 @@
                     <button data-size="11">11x11</button>
                     <button data-size="13">13x13</button>
                 </div>
+            </div>
+
+            <div style="margin: 20px 0; text-align:center;">
+                <label>
+                 <input type="checkbox" id="showPinyinCheckbox">
+                    Show pinyin
+                </label>
             </div>
     
             <button id="startGame" style="width: 100%; margin-top: 20px;">Start Game</button>
@@ -480,14 +498,14 @@
     { chinese: '本', pinyin: 'běn', translation: '(measure word for books or volumes)' },
     { chinese: '本子', pinyin: 'běn zi', translation: 'book' },
     { chinese: '比', pinyin: 'bǐ', translation: 'particle used for comparison' },
-    { chinese: '别', pinyin: 'bié', translation: 'Don’t' },
+    { chinese: '别', pinyin: 'bié', translation: 'Don`t' },
     { chinese: '别的', pinyin: 'bié de', translation: 'other' },
     { chinese: '别人', pinyin: 'bié·rén', translation: 'other people' },
     { chinese: '病', pinyin: 'bìng', translation: 'disease' },
     { chinese: '病人', pinyin: 'bìng rén', translation: 'patient' },
     { chinese: '不大', pinyin: 'bú dà', translation: 'not big' },
     { chinese: '不对', pinyin: 'bú duì', translation: 'wrong' },
-    { chinese: '不客气', pinyin: 'bú kè qì', translation: 'You’re welcome' },
+    { chinese: '不客气', pinyin: 'bú kè qì', translation: 'You`re welcome' },
     { chinese: '不用', pinyin: 'bú yòng', translation: 'No need to' },
     { chinese: '不', pinyin: 'bù', translation: 'No' },
     { chinese: '菜', pinyin: 'cài', translation: 'dish' },
@@ -548,7 +566,7 @@
     { chinese: '读', pinyin: 'dú', translation: 'read' },
     { chinese: '读书', pinyin: 'dú shū', translation: 'reading; study' },
     { chinese: '对', pinyin: 'duì', translation: 'right' },
-    { chinese: '对不起', pinyin: 'duìbuqǐ', translation: 'I’m sorry.' },
+    { chinese: '对不起', pinyin: 'duìbuqǐ', translation: 'I`m sorry.' },
     { chinese: '多', pinyin: 'duō', translation: 'many; much; more' },
     { chinese: '多少', pinyin: 'duōshao', translation: 'how much' },
     { chinese: '饿', pinyin: 'è', translation: 'hungry' },
@@ -689,8 +707,8 @@
     { chinese: '毛', pinyin: 'máo', translation: 'a fractional unit of money in China (measure word)' },
     { chinese: '没', pinyin: 'méi', translation: 'no' },
     { chinese: '没关系', pinyin: 'méiguānxi', translation: 'No problem' },
-    { chinese: '没什么', pinyin: 'méi shén me', translation: 'It’s nothing' },
-    { chinese: '没事儿', pinyin: 'méi shìr', translation: 'It’s okay' },
+    { chinese: '没什么', pinyin: 'méi shén me', translation: 'It`s nothing' },
+    { chinese: '没事儿', pinyin: 'méi shìr', translation: 'It`s okay' },
     { chinese: '没有', pinyin: 'méi yǒu', translation: 'have not; no' },
     { chinese: '妹妹', pinyin: 'mèi mei', translation: 'younger sister' },
     { chinese: '门', pinyin: 'mén', translation: 'door' },
@@ -732,7 +750,7 @@
     { chinese: '您', pinyin: 'nín', translation: 'you' },
     { chinese: '牛奶', pinyin: 'niúnǎi', translation: 'milk' },
     { chinese: '女', pinyin: 'nǚ', translation: 'woman' },
-    { chinese: '女儿', pinyin: 'nǚ’ér', translation: 'daughter' },
+    { chinese: '女儿', pinyin: 'nǚ`ér', translation: 'daughter' },
     { chinese: '女孩儿', pinyin: 'nǚ háir', translation: 'girl' },
     { chinese: '女朋友', pinyin: 'nǚ péng yǒu', translation: 'girlfriend' },
     { chinese: '女人', pinyin: 'nǚ ren', translation: 'woman' },
@@ -781,7 +799,7 @@
     { chinese: '上学', pinyin: 'shàng xué', translation: 'go to school' },
     { chinese: '少', pinyin: 'shǎo', translation: 'less' },
     { chinese: '谁', pinyin: 'shéi', translation: 'who' },
-    { chinese: '身上', pinyin: 'shēn shàng', translation: 'body; on one’s body' },
+    { chinese: '身上', pinyin: 'shēn shàng', translation: 'body; on one`s body' },
     { chinese: '身体', pinyin: 'shēntǐ', translation: 'body' },
     { chinese: '什么', pinyin: 'shénme', translation: 'What' },
     { chinese: '生病', pinyin: 'shēngbìng', translation: 'Fall ill' },
@@ -793,7 +811,7 @@
     { chinese: '事', pinyin: 'shì', translation: 'thing' },
     { chinese: '试', pinyin: 'shì', translation: 'try' },
     { chinese: '是', pinyin: 'shì', translation: 'yes' },
-    { chinese: '是不是', pinyin: 'shì bú shì', translation: 'isn’t it?' },
+    { chinese: '是不是', pinyin: 'shì bú shì', translation: 'isn`t it?' },
     { chinese: '手', pinyin: 'shǒu', translation: 'hand' },
     { chinese: '手机', pinyin: 'shǒujī', translation: 'Mobile phone' },
     { chinese: '书', pinyin: 'shū', translation: 'book' },
@@ -871,7 +889,7 @@
     { chinese: '星期', pinyin: 'xīngqī', translation: 'week' },
     { chinese: '星期日', pinyin: 'xīng qī rì', translation: 'Sunday' },
     { chinese: '星期天', pinyin: 'xīng qī tiān', translation: 'Sunday' },
-    { chinese: '行', pinyin: 'xíng', translation: 'That’s ok' },
+    { chinese: '行', pinyin: 'xíng', translation: 'That`s ok' },
     { chinese: '休息', pinyin: 'xiūxi', translation: 'Rest' },
     { chinese: '学', pinyin: 'xué', translation: 'learn; study' },
     { chinese: '学生', pinyin: 'xuésheng', translation: 'Student' },
@@ -5956,6 +5974,7 @@ const hsk6Words = [
     wordPlacements: [],
     startTime: null,
     timerInterval: null
+    showPinyin: false 
 };
 
 function getWordsForCurrentLevel() {
@@ -6002,6 +6021,13 @@ function getWordsForCurrentLevel() {
     gameState.wordPlacements = [];
     gameState.startTime = null;
     gameState.timerInterval = null;
+
+    const showPinyinCheckbox = document.getElementById('showPinyinCheckbox');
+        gameState.showPinyin = showPinyinCheckbox.checked;
+
+        showPinyinCheckbox.addEventListener('change', () => {
+        gameState.showPinyin = showPinyinCheckbox.checked;
+    });
 
     // Update game screen structure with header-spacer class
     const gameScreen = document.getElementById('gameScreen');
@@ -6458,10 +6484,55 @@ function renderGrid() {
             cellElement.dataset.row = i;
             cellElement.dataset.col = j;
             wordGrid.appendChild(cellElement);
+
+            // Survol (PC)
+            cellElement.addEventListener('mouseenter', (e) => {
+                if (!gameState.showPinyin) return;
+                const char = e.target.textContent;
+                if (pinyinDict[char]) {
+                    const tooltip = document.getElementById('pinyinTooltip');
+                    tooltip.textContent = pinyinDict[char];
+                    tooltip.style.left = (e.pageX + 10) + 'px';
+                    tooltip.style.top = (e.pageY + 10) + 'px';
+                    tooltip.style.display = 'block';
+                }
+            });
+
+            cellElement.addEventListener('mousemove', (e) => {
+                if (!gameState.showPinyin) return;
+                const tooltip = document.getElementById('pinyinTooltip');
+                tooltip.style.left = (e.pageX + 10) + 'px';
+                tooltip.style.top = (e.pageY + 10) + 'px';
+            });
+
+            cellElement.addEventListener('mouseleave', () => {
+                document.getElementById('pinyinTooltip').style.display = 'none';
+            });
+
+            // Mobile (tap court)
+            cellElement.addEventListener('touchstart', (e) => {
+                if (!gameState.showPinyin) return;
+                const char = e.target.textContent;
+                if (pinyinDict[char]) {
+                    const tooltip = document.getElementById('pinyinTooltip');
+                    tooltip.textContent = pinyinDict[char];
+                    tooltip.style.left = (e.touches[0].pageX + 10) + 'px';
+                    tooltip.style.top = (e.touches[0].pageY + 10) + 'px';
+                    tooltip.style.display = 'block';
+                }
+            });
+
+            cellElement.addEventListener('touchend', () => {
+                setTimeout(() => {
+                    document.getElementById('pinyinTooltip').style.display = 'none';
+                }, 800);
+            });
         });
     });
+
     updateFoundCells();
 }
+
 
 function renderWordsList() {
     const wordsList = document.getElementById('wordsList');
@@ -6774,5 +6845,6 @@ function updateProgressCounter() {
     }
 }
 </script>
+<div id="pinyinTooltip"></div>
 </body>
 </html>
