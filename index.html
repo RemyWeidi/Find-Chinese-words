@@ -10703,10 +10703,10 @@ const hsk6Words = [
   <script>
   const GRID_CONFIGS = {
     '5':  { size: 5,  wordCount: 4 },
-    '7':  { size: 7,  wordCount: 6 },
-    '9':  { size: 9,  wordCount: 9 },
-    '11': { size: 11, wordCount: 12 },
-    '13': { size: 13, wordCount: 16 }
+    '7':  { size: 7,  wordCount: 8 },
+    '9':  { size: 9,  wordCount: 12 },
+    '11': { size: 11, wordCount: 18 },
+    '13': { size: 13, wordCount: 24 }
   };
 
   const DIRECTIONS = [
@@ -10963,7 +10963,7 @@ const hsk6Words = [
     for (const word of selectedWords) {
       let placed = false;
       let attempts = 0;
-      const maxAttempts = 100;
+      const maxAttempts = gameState.gridSize >= 11 ? 150 : 100;
       while (!placed && attempts < maxAttempts) {
         const x = Math.floor(Math.random() * gameState.gridSize);
         const y = Math.floor(Math.random() * gameState.gridSize);
