@@ -6442,14 +6442,17 @@ function resetGame() {
 
 function renderGrid() {
     const wordGrid = document.getElementById('wordGrid');
-    const cellSize = 60;
+    const cellSize = 60; // Taille fixe des cellules
+    
+    // Définir la taille de la grille
     wordGrid.style.gridTemplateColumns = `repeat(${gameState.gridSize}, ${cellSize}px)`;
-    const totalSize = (gameState.gridSize * cellSize) + ((gameState.gridSize - 1) * 5);
+    // Calculer la taille totale incluant les gaps
+    const totalSize = (gameState.gridSize * cellSize) + ((gameState.gridSize - 1) * 5); // 5px est la taille du gap
     wordGrid.style.width = `${totalSize}px`;
     wordGrid.style.height = `${totalSize}px`;
-
+    
     wordGrid.innerHTML = '';
-
+    
     gameState.currentGrid.forEach((row, i) => {
         row.forEach((cell, j) => {
             const cellElement = document.createElement('div');
@@ -6460,7 +6463,6 @@ function renderGrid() {
             wordGrid.appendChild(cellElement);
         });
     });
-    updateFoundCells();
 }
 
 function renderWordsList() {
@@ -6620,18 +6622,9 @@ function updateFoundCells() {
         }
     });
 
+    // Mise à jour du compteur
     document.getElementById('progressCounter').textContent = 
         `Found: ${gameState.foundWords.size}/${gameState.wordsToFind.length}`;
-}
-
-function markPlacementCells(placement, className) {
-    const dir = DIRECTIONS.find(d => d.name === placement.direction);
-    for (let i = 0; i < placement.word.length; i++) {
-        const row = placement.start.y + dir.dy * i;
-        const col = placement.start.x + dir.dx * i;
-        const cell = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
-        if (cell) cell.classList.add(className);
-    }
 }
 
 function updateProgressCounter() {
