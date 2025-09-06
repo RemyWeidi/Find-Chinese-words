@@ -34,17 +34,52 @@
     .options-buttons {
       display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px;
     }
-    button {
-      padding: 10px 15px; border: 1px solid var(--border-color); border-radius: 5px;
-      background: white; cursor: pointer; transition: all 0.3s ease;
-      font-size: 1rem; font-family: 'Poppins', sans-serif; font-weight: 500;
-    }
-    button:hover { background: var(--primary-color); color: white; }
-    button.selected { background: var(--primary-color); color: white; }
-    .toggle { opacity: 0.6; }
-    .toggle.selected { opacity: 1; background: var(--primary-color); color: white; }
-    #startGame:disabled { opacity: 0.5; cursor: not-allowed; }
+button {
+  padding: 10px 15px;
+  border: 1px solid var(--border-color);
+  border-radius: 5px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 1rem;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 500;
+  -webkit-tap-highlight-color: transparent; /* ✅ supprime le flash bleu au tap */
+}
 
+/* Hover uniquement si vrai pointeur (souris) */
+@media (hover: hover) and (pointer: fine) {
+  button:hover {
+    background: var(--primary-color);
+    color: white;
+  }
+
+  /* Hover doux pour les boutons toggle non sélectionnés */
+  .toggle:not(.selected):hover {
+    background: var(--secondary-color);
+    color: var(--text-color);
+  }
+}
+
+button.selected {
+  background: var(--primary-color);
+  color: white;
+}
+
+.toggle {
+  opacity: 0.6;
+}
+
+.toggle.selected {
+  opacity: 1;
+  background: var(--primary-color);
+  color: white;
+}
+
+#startGame:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
     .game-container { display: block; max-width: calc(100% - 40px); margin: 40px auto 0; width: fit-content; }
     @media (max-width: 768px) {
       .game-container { margin: 20px auto 0; }
