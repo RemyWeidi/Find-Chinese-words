@@ -6624,6 +6624,16 @@ function updateFoundCells() {
         `Found: ${gameState.foundWords.size}/${gameState.wordsToFind.length}`;
 }
 
+function markPlacementCells(placement, className) {
+    const dir = DIRECTIONS.find(d => d.name === placement.direction);
+    for (let i = 0; i < placement.word.length; i++) {
+        const row = placement.start.y + dir.dy * i;
+        const col = placement.start.x + dir.dx * i;
+        const cell = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
+        if (cell) cell.classList.add(className);
+    }
+}
+
 function updateProgressCounter() {
     const actualFoundCount = Math.min(gameState.foundWords.size, gameState.wordsToFind.length);
     document.getElementById('progressCounter').textContent = 
