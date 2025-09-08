@@ -10964,16 +10964,16 @@ const hsk6Words = [
   }
 
   function generateGrid() {
-  // Crée une grille vide
+  // 1) Grille vide
   const grid = Array(gameState.gridSize)
     .fill()
     .map(() => Array(gameState.gridSize).fill(''));
 
-  // Nombre de mots à placer selon la taille choisie
+  // 2) Nombre de mots selon la taille choisie
   const config = GRID_CONFIGS[gameState.gridSize.toString()];
   const numWords = config.wordCount;
 
-  // 1) Construire la liste des mots UNIQUEMENT à partir des niveaux HSK sélectionnés
+  // 3) Récupérer UNIQUEMENT les mots des niveaux HSK sélectionnés
   const availableWords = [];
   for (const level of gameState.selectedHskLevels) {
     switch (level) {
@@ -10986,7 +10986,7 @@ const hsk6Words = [
     }
   }
 
-  // 2) Ne garder que les mots cohérents avec la taille (≥2 et ≤ gridSize)
+  // 4) Garder les mots compatibles avec la taille de la grille
   const eligibleWords = availableWords.filter(w => {
     const len = w.chinese.length;
     return len >= 2 && len <= gameState.gridSize;
@@ -10997,9 +10997,10 @@ const hsk6Words = [
     return null;
   }
 
-  // 3) Sélectionner et placer les mots
+  // 5) Sélectionner les mots et tenter de les placer
   gameState.wordsToFind = [];
   gameState.wordPlacements = [];
+
   const selectedWords = shuffleArray([...eligibleWords]).slice(0, numWords);
 
   for (const word of selectedWords) {
@@ -11021,12 +11022,12 @@ const hsk6Words = [
     }
 
     if (!placed) {
-      console.log("Failed to place word, retrying grid generation");
+      // Si un mot refuse de se placer, on régénère proprement la grille
       return generateGrid();
     }
   }
 
-  // 4) Remplir les cases vides UNIQUEMENT avec des caractères provenant des niveaux sélectionnés
+  // 6) Remplir les cases vides avec des CARACTÈRES issus des niveaux sélectionnés
   const uniqueChars = new Set();
   for (const w of availableWords) {
     for (const ch of w.chinese) {
@@ -11035,8 +11036,8 @@ const hsk6Words = [
   }
   const availableChars = Array.from(uniqueChars);
 
-  // Petit filet de sécurité (au cas où)
   if (availableChars.length === 0) {
+    // filet de sécurité
     availableChars.push('一', '人', '大', '中', '国');
   }
 
@@ -11049,9 +11050,10 @@ const hsk6Words = [
     }
   }
 
+  // 7) Retourner la grille (PAS d’effets de bord sur l’UI / pinyin)
   return grid;
 }
-
+    
   function canPlaceWord(word, startX, startY, direction, grid) {
     const { dx, dy } = direction;
     for (let i = 0; i < word.length; i++) {
