@@ -115,8 +115,26 @@ button.selected {
     .word-item .translation, .word-item .pinyin { font-size: 0.9em; color: #666; display: block; }
     .word-item.found { background-color: #e8f5e9; }
 
-    .status-footer { border-top: 1px solid var(--border-color); padding-top: 15px; background: white; margin-top: auto; }
-    .progress-counter, .timer { text-align: center; font-size: 1.2em; font-weight: 500; color: var(--primary-color); }
+    .status-footer {
+  border-top: 1px solid var(--border-color);
+  padding-top: 15px;
+  background: white;
+  margin-top: auto;
+
+  /* centrage + espacement harmonisé */
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 6px;
+}
+
+.status-footer .progress-counter,
+.status-footer .attempt-counter,
+.status-footer .timer {
+  text-align: center;
+  font-size: 1.2em;
+  font-weight: 500;
+  color: var(--primary-color);
+}
 
     .validation-modal, .completion-message {
       display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
@@ -221,6 +239,7 @@ button.selected {
           <div class="words" id="wordsList"></div>
           <div class="status-footer">
             <div class="progress-counter" id="progressCounter">Found: 0/0</div>
+			<div class="attempt-counter" id="attemptCounter">Attempt: 0/0</div>
             <div class="timer" id="gameTimer">00:00</div>
           </div>
         </div>
@@ -10762,7 +10781,8 @@ const hsk6Words = [
     wordPlacements: [],
     startTime: null,
     timerInterval: null,
-    showPinyin: false
+    showPinyin: false,
+	attempts: 0
   };
 
   function getWordsForCurrentLevel() {
@@ -11223,15 +11243,16 @@ function scanGridForWords(grid, dictSet) {
   }
 
   function resetGame() {
-    gameState.foundWords.clear();
-    gameState.selectedCells = [];
-    gameState.wordPlacements = [];
-    gameState.currentGrid = [];
-    gameState.wordsToFind = [];
-    stopTimer();
-    updateProgressCounter();
-  }
-
+  gameState.foundWords.clear();
+  gameState.selectedCells = [];
+  gameState.wordPlacements = [];
+  gameState.currentGrid = [];
+  gameState.wordsToFind = [];
+  gameState.attempts = 0;     
+  stopTimer();
+  updateProgressCounter();
+  updateAttemptCounter();        
+}
   function renderGrid() {
     const wordGrid = document.getElementById('wordGrid');
     const cellSize = 60;
@@ -11405,6 +11426,13 @@ function scanGridForWords(grid, dictSet) {
     const count = Math.min(gameState.foundWords.size, gameState.wordsToFind.length);
     document.getElementById('progressCounter').textContent = `Found: ${count}/${gameState.wordsToFind.length}`;
   }
+  
+  function updateAttemptCounter() {
+  const found = gameState.foundWords.size;
+  const attempts = gameState.attempts;
+  const el = document.getElementById('attemptCounter');
+  if (el) el.textContent = `Attempt: ${found}/${attempts}`;
+}
 
   function showValidationModal() {
     document.getElementById('validationModal').style.display = 'block';
@@ -11456,15 +11484,25 @@ function scanGridForWords(grid, dictSet) {
   }
 
   function confirmSelection() {
-    const ok = validateSelection();
-    if (ok) {
-      updateFoundCells();
-      renderWordsList();
-      updateProgressCounter();
-    }
-    hideValidationModal();
-    clearSelection();
+  // Chaque clic sur "Confirm" compte comme UNE tentative
+  if (typeof gameState.attempts !== 'number') gameState.attempts = 0;
+  gameState.attempts++;
+
+  const ok = validateSelection();
+  if (ok) {
+    updateFoundCells();
+    renderWordsList();
+    updateProgressCounter();
   }
+
+  // Met à jour l'affichage "Attempt: found/attempts" si la fonction existe
+  if (typeof updateAttemptCounter === 'function') {
+    updateAttemptCounter();
+  }
+
+  hideValidationModal();
+  clearSelection();
+}
 
   function cancelSelection() { hideValidationModal(); clearSelection(); }
 
