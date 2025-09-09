@@ -5260,7 +5260,7 @@ const pinyinDict = {
   </script>
   <script>
 ﻿const hsk1Words = [
-    { chinese: "爱", pinyin: "ài", translation: "love" },
+{ chinese: "爱", pinyin: "ài", translation: "love" },
     { chinese: "爱好", pinyin: "ài hào", translation: "hobby" },
     { chinese: "八", pinyin: "bā", translation: "eight" },
     { chinese: "爸爸", pinyin: "bàba", translation: "dad" },
@@ -10780,6 +10780,90 @@ const hsk6Words = [
     return combinedWords;
   }
 
+  // ==============================
+  // Helpers for UNIQUE FILLERS
+  // ==============================
+  function randomCJK() {
+    // Common CJK Unified Ideographs range
+    const start = 0x4E00, end = 0x9FFF;
+    const code = Math.floor(Math.random() * (end - start + 1)) + start;
+    return String.fromCharCode(code);
+  }
+
+  function generateUniqueCJK(count, forbiddenSet) {
+    const out = [];
+    const guard = count * 20 + 200; // safety to avoid infinite loop
+    let tries = 0;
+    while (out.length < count && tries < guard) {
+      const ch = randomCJK();
+      if (!forbiddenSet.has(ch)) { forbiddenSet.add(ch); out.push(ch); }
+      tries++;
+    }
+    return out;
+  }
+  
+  function buildDictionarySets(selectedOnly = true) {
+  const lvlToArray = lvl => (typeof window[`hsk${lvl}Words`] !== 'undefined' ? window[`hsk${lvl}Words`] : []);
+  let dict = [];
+  if (selectedOnly) {
+    for (const lvl of gameState.selectedHskLevels) dict.push(...lvlToArray(lvl));
+  } else {
+    for (let lvl = 1; lvl <= 6; lvl++) dict.push(...lvlToArray(lvl));
+  }
+  const words = new Set(dict.map(w => w.chinese));
+  return words;
+}
+
+function placedWordsSet() {
+  return new Set(gameState.wordPlacements.map(p => p.word));
+}
+
+// Retourne un Set de clés "row,col" pour toutes les cases appartenant aux mots placés
+function getPlacedPositions() {
+  const pos = new Set();
+  for (const placement of gameState.wordPlacements) {
+    const dir = DIRECTIONS.find(d => d.name === placement.direction);
+    for (let i = 0; i < placement.word.length; i++) {
+      const row = placement.start.y + dir.dy * i;
+      const col = placement.start.x + dir.dx * i;
+      pos.add(`${row},${col}`);
+    }
+  }
+  return pos;
+}
+
+function findAllInString(s, dictSet) {
+  const hits = [];
+  for (let i = 0; i < s.length; i++) {
+    for (let j = i + 2; j <= s.length; j++) { // uniquement longueur >= 2
+      const sub = s.slice(i, j);
+      if (dictSet.has(sub)) hits.push(sub);
+    }
+  }
+  return hits;
+}
+
+function scanGridForWords(grid, dictSet) {
+  const found = new Set();
+  const N = grid.length;
+
+  // Lignes
+  for (let r = 0; r < N; r++) {
+    const row = grid[r].join('');
+    findAllInString(row, dictSet).forEach(w => found.add(w));
+    findAllInString([...row].reverse().join(''), dictSet).forEach(w => found.add(w));
+  }
+
+  // Colonnes
+  for (let c = 0; c < N; c++) {
+    let col = '';
+    for (let r = 0; r < N; r++) col += grid[r][c];
+    findAllInString(col, dictSet).forEach(w => found.add(w));
+    findAllInString([...col].reverse().join(''), dictSet).forEach(w => found.add(w));
+  }
+  return found;
+}
+
   document.addEventListener('DOMContentLoaded', () => {
     initializeGame();
   });
@@ -11027,30 +11111,89 @@ const hsk6Words = [
     }
   }
 
-  // 6) Remplir les cases vides avec des CARACTÈRES issus des niveaux sélectionnés
-  const uniqueChars = new Set();
+  // 6) Remplir les cases vides avec des CARACTÈRES UNIQUES (fillers) qui ne se répètent pas,
+  //    en excluant les caractères utilisés par les mots placés.
+  const placedWordChars = new Set();
+  for (const p of gameState.wordPlacements) {
+    for (const ch of p.word) placedWordChars.add(ch);
+  }
+
+  const uniqueCharsAll = new Set();
   for (const w of availableWords) {
-    for (const ch of w.chinese) {
-      uniqueChars.add(ch);
-    }
-  }
-  const availableChars = Array.from(uniqueChars);
-
-  if (availableChars.length === 0) {
-    // filet de sécurité
-    availableChars.push('一', '人', '大', '中', '国');
+    for (const ch of w.chinese) uniqueCharsAll.add(ch);
   }
 
+  // Exclure les caractères déjà utilisés par les mots placés (les répétitions visibles doivent venir des mots)
+  let fillerPool = Array.from(uniqueCharsAll).filter(ch => !placedWordChars.has(ch));
+
+  // Repérer les positions vides
+  const emptyPositions = [];
   for (let y = 0; y < gameState.gridSize; y++) {
     for (let x = 0; x < gameState.gridSize; x++) {
-      if (grid[y][x] === '') {
-        const randomChar = availableChars[Math.floor(Math.random() * availableChars.length)];
-        grid[y][x] = randomChar;
+      if (grid[y][x] === '') emptyPositions.push({ x, y });
+    }
+  }
+
+  // S'assurer qu'on a assez de caractères uniques
+  if (fillerPool.length < emptyPositions.length) {
+    const forbidden = new Set([...placedWordChars, ...fillerPool]);
+    const needed = emptyPositions.length - fillerPool.length;
+    fillerPool = fillerPool.concat(generateUniqueCJK(needed, forbidden));
+  }
+
+  // Remplissage initial des fillers (sans répétition)
+  function fillFillersFromPool(pool) {
+    const poolCopy = [...pool];
+    shuffleArray(poolCopy);
+    let idx = 0;
+    for (const pos of emptyPositions) {
+      grid[pos.y][pos.x] = poolCopy[idx++];
+    }
+  }
+  fillFillersFromPool(fillerPool);
+
+  // 7) Contrôle anti-“mots accidentels”
+  // On ne veut pas que des suites de fillers forment un mot du dictionnaire (tous niveaux)
+  const dictAll = buildDictionarySets(false); // toutes listes
+  const placed = placedWordsSet();
+  const placedPos = getPlacedPositions();
+
+  function reshuffleOnlyFillers() {
+    // Récupérer les caractères actuels des fillers
+    const currentFillerChars = [];
+    for (let y = 0; y < gameState.gridSize; y++) {
+      for (let x = 0; x < gameState.gridSize; x++) {
+        if (!placedPos.has(`${y},${x}`)) {
+          currentFillerChars.push(grid[y][x]);
+        }
+      }
+    }
+    shuffleArray(currentFillerChars);
+    // Réinjecter uniquement dans les positions fillers
+    let k = 0;
+    for (let y = 0; y < gameState.gridSize; y++) {
+      for (let x = 0; x < gameState.gridSize; x++) {
+        if (!placedPos.has(`${y},${x}`)) {
+          grid[y][x] = currentFillerChars[k++];
+        }
       }
     }
   }
 
-  // 7) Retourner la grille (PAS d’effets de bord sur l’UI / pinyin)
+  let unintended = [...scanGridForWords(grid, dictAll)].filter(w => !placed.has(w));
+  let reshuffleAttempts = 0;
+  while (unintended.length > 0 && reshuffleAttempts < 25) {
+    reshuffleAttempts++;
+    reshuffleOnlyFillers();
+    unintended = [...scanGridForWords(grid, dictAll)].filter(w => !placed.has(w));
+  }
+
+  // Dernier recours : si des intrus persistent, on régénère
+  if (unintended.length > 0) {
+    return generateGrid();
+  }
+
+  // 8) Retourner la grille
   return grid;
 }
     
