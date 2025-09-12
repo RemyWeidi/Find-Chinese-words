@@ -10963,6 +10963,7 @@ const hsk6Words = [
 </script>
 
 <script>
+    
 /* =================== CONFIG =================== */
 const GRID_CONFIGS = {
   '5':  { size: 5,  wordCount: 4 },
@@ -11461,16 +11462,23 @@ function renderGrid() {
 
       // tooltips pinyin (inchangé)
       d.addEventListener('mouseenter', (e) => {
-        if (!gameState.showPinyin) return;
-        const char = e.target.textContent;
-        if (pinyinDict[char]) {
-          const tooltip = document.getElementById('pinyinTooltip');
-          tooltip.textContent = pinyinDict[char];
-          tooltip.style.left = (e.pageX + 10) + 'px';
-          tooltip.style.top  = (e.pageY + 10) + 'px';
-          tooltip.style.display = 'block';
-        }
-      });
+  if (!gameState.showPinyin) return;
+  const char = e.target.textContent;
+  if (pinyinDict[char]) {
+    const contenu = pinyinDict[char];
+    const x = e.pageX + 10;
+    const y = e.pageY + 10;
+
+    if (isMobile) {
+      showTooltipWithTimeout(contenu, x, y);
+    } else {
+      tooltip.innerHTML = contenu;
+      tooltip.style.left = x + "px";
+      tooltip.style.top = y + "px";
+      tooltip.style.display = "block";
+    }
+  }
+});
       d.addEventListener('mousemove', (e) => {
         if (!gameState.showPinyin) return;
         const tooltip = document.getElementById('pinyinTooltip');
@@ -11834,6 +11842,31 @@ function updateAttemptCounter() {
   const attempts = gameState.attempts;
   const el = document.getElementById('attemptCounter');
   if (el) el.textContent = `Attempt: ${found}/${attempts}`;
+}
+
+ /* =====================================
+   AJOUT : Gestion auto du tooltip mobile
+====================================== */
+const tooltip = document.getElementById("pinyinTooltip");
+const isMobile = /Mobi|Android/i.test(navigator.userAgent);
+
+if (isMobile) {
+  document.addEventListener("touchstart", function(e) {
+    if (!tooltip.contains(e.target)) {
+      tooltip.style.display = "none";
+    }
+  });
+
+  window.showTooltipWithTimeout = function(content, x, y) {
+    tooltip.innerHTML = content;
+    tooltip.style.left = x + "px";
+    tooltip.style.top = y + "px";
+    tooltip.style.display = "block";
+
+    setTimeout(() => {
+      tooltip.style.display = "none";
+    }, 1000); // ✅ 1 seconde
+  };
 }
 
 
