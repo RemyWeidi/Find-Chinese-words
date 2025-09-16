@@ -12070,6 +12070,20 @@ document.addEventListener("DOMContentLoaded", () => {
   if (btn) btn.addEventListener("click", showNextWord);
 });
 
+function showNextWord() {
+  // avancer dans la liste sans déclencher une double validation
+  if (gameState.currentWordIndex < gameState.words.length - 1) {
+    gameState.currentWordIndex++;
+    const next = gameState.words[gameState.currentWordIndex];
+
+    // mettre à jour le label du prochain mot (si tu en as un affichage)
+    const nextLabel = document.getElementById("nextWordLabel");
+    if (nextLabel) nextLabel.textContent = next.chinese;
+
+    // pas de popup ici ! juste avancer
+  }
+}
+
 /* =================== TIMER & FOOTER =================== */
 function startTimer() {
   gameState.startTime = Date.now();
