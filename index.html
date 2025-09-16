@@ -387,8 +387,6 @@ button.selected { background:var(--primary); color:white; }
   margin-top: 2px;
 }
 
-/* Cache la définition quand l’option est décochée */
-body.hide-def .popup-box .def { display: none !important; }
 
 #overlay {
   position: fixed;
@@ -11411,12 +11409,12 @@ function revealNextWord() {
   // remplace toute popup existante et affiche celle du mot si nécessaire
   hidePopup();
   if (shouldShowDef) {
-    showPopup("word", {
-      chinese: next.chinese,
-      pinyin: next.pinyin,
-      translation: next.translation, // si l’option est décochée on ne passe rien
-      closable: false                 // auto-fermeture (2s)
-    });
+  showPopup("word", {
+    chinese: next.chinese,
+    pinyin: next.pinyin,
+    translation: next.translation,
+    closable: false
+  });
   }
 
   // si tout est trouvé → écran final (après la popup si elle s’affiche)
@@ -12012,12 +12010,12 @@ function confirmSelection() {
 
   // ✅ Afficher la popup auto SEULEMENT si showDefinition est actif
   if (gameState.showDefinition) {
-    showPopup("word", {
-      chinese: foundWord.chinese,
-      pinyin: foundWord.pinyin,
-      translation: foundWord.translation,
-      closable: false
-    });
+  showPopup("word", {
+    chinese: foundWord.chinese,
+    pinyin: foundWord.pinyin,
+    translation: foundWord.translation, // affiché seulement si case cochée
+    closable: false
+  });
   }
 
   // ✅ Si c’était le dernier mot → après 2s seulement → fenêtre finale
@@ -12058,7 +12056,7 @@ function openWordModal(word) {
   showPopup("word", { 
     chinese: word.chinese, 
     pinyin: word.pinyin, 
-    translation: word.translation,
+    translation: word.translation, // toujours présent
     closable: true
   });
 }
