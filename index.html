@@ -428,6 +428,33 @@ button.selected { background:var(--primary); color:white; }
 @media (max-width:1024px) {
   #backBar,#panel,#gridWrap,#footerBar { width:var(--grid-outer); }
 }
+/* ✅ Agrandir les popups et texte sur mobile */
+@media (max-width: 520px) {
+  .popup-box {
+    padding: 26px 22px;       /* un peu plus d'espace intérieur */
+    max-width: 95vw;          /* occupe presque toute la largeur */
+  }
+  .popup-box .cn {
+    font-size: 56px;          /* caractère chinois plus grand */
+  }
+  .popup-box .py {
+    font-size: 22px;          /* pinyin plus grand */
+  }
+  .popup-box .def {
+    font-size: 24px;          /* définition plus grande */
+  }
+  .popup-box .completion-title {
+    font-size: 2rem;          /* titre de la feuille de score */
+  }
+  .popup-box .result-stat {
+    font-size: 1.4rem;        /* libellés Timer/Attempts */
+  }
+  .popup-box .result-value {
+    font-size: 1.8rem;        /* valeurs (temps, score) */
+  }
+}
+
+
 </style>
 </head>
 <body>
