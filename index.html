@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta id="viewportMeta" name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-<title>中文 Word Search — all-in-one (no borders + X WORDS)</title>
+<title>中文 Word Search — unified popup</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700;900&family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
@@ -15,9 +15,6 @@
   --primary:#C6666B;
   --primary-700:#9a4e52;
   --accent:#F0D8D9;
-  --good:#53b2ff;    /* 20% */
-  --warn:#ffbe55;    /* 60% */
-  --alert:#ff8a8a;   /* 20% */
   --grid-border:#C6666B;
   --white:#fff;
   --shadow: 0 8px 20px rgba(20,32,56,.08);
@@ -50,10 +47,15 @@ html,body {
   box-shadow:0 2px 4px rgba(0,0,0,0.1); max-width:640px; margin:0 auto;
 }
 .menu h1 { text-align:center; margin-bottom:20px; color:var(--primary); font-weight:800; }
-.options-group { margin-bottom:20px; }
+.options-group { margin-bottom:24px; }
 .options-group h2 { margin-bottom:10px; font-size:1.2em; font-weight:600; }
 .options-buttons {
   display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:10px;
+}
+
+#startGame {
+  width: 100%;
+  margin-top: 24px !important; /* égal au bas du bloc d’options */
 }
 button {
   padding:10px 15px; border:1px solid #ddd; border-radius:10px;
@@ -74,7 +76,7 @@ button.selected { background:var(--primary); color:white; }
   margin:12px auto;
   padding:0 max(16px, env(safe-area-inset-left)) 0 max(16px, env(safe-area-inset-right));
   display:flex; flex-direction:column; align-items:center; gap:12px;
-  width:100vw; overflow-x:hidden;
+  width: 100%; overflow-x:hidden;
 }
 
 /* Back bar */
@@ -101,7 +103,6 @@ button.selected { background:var(--primary); color:white; }
   letter-spacing:.6px; font-size:clamp(28px,5.8vw,46px);
   line-height:1.2; min-height:84px;
 }
-/* ✅ bloc mots scrollable si ça déborde */
 .panel-bottom {
   background:var(--accent);
   padding:12px 18px;
@@ -119,7 +120,7 @@ button.selected { background:var(--primary); color:white; }
   column-gap:22px; row-gap:12px;
   align-items:center; justify-content:center;
   padding:6px;
-  overflow:visible; /* laisse le parent (.panel-bottom) gérer le scroll */
+  overflow:visible;
 }
 .word-chip { display:inline-flex; cursor:pointer; user-select:none; }
 .word-chip .label {
@@ -177,9 +178,7 @@ button.selected { background:var(--primary); color:white; }
 .cell {
   width:var(--cell); height:var(--cell);
   display:flex; align-items:center; justify-content:center;
-  /* ✅ police unique, comme 5×5 */
   font-size: calc(var(--cell) * 0.75);
-
   border:none; background:transparent; border-radius:10px;
   font-weight:400; font-family:'Noto Sans SC','Microsoft YaHei',sans-serif;
   user-select:none; cursor:pointer;
@@ -190,31 +189,111 @@ button.selected { background:var(--primary); color:white; }
   outline:2px solid var(--primary-700);
   outline-offset:-2px;
 }
-
 .cell.is-highlighted {
   color:#fff !important;
   text-shadow:0 1px 0 rgba(0,0,0,.15);
-  font-weight:400;
-  font-family:'Noto Sans SC','Microsoft YaHei',sans-serif;
-}
-
-#selectedWord {
-  font-family: 'Noto Sans SC','Microsoft YaHei',sans-serif;
-  font-weight: 500; /* ou 700 si tu veux plus épais */
-  font-size: 20px;  /* tu peux ajuster selon la lisibilité */
-  color: #111827;   /* ou la même couleur que tes cellules */
 }
 
 /* Footer */
 .footer {
-  display:grid; grid-template-columns:1fr; gap:6px;
-  align-items:center; justify-items:center;
-  margin:18px 0 36px;
+  display: flex;
+  justify-content: center;  /* centre le bloc du timer */
+  align-items: flex-start;   /* aligne en haut */
+  margin: 14px 0 24px;
+  width: 100%;
+  max-width: var(--grid-outer);
+  position: relative;
 }
+
+.footer-center {
+  text-align: center;
+  flex: 1; /* prend tout l’espace dispo pour rester centré */
+}
+
+.footer-right {
+  position: absolute;
+  right: 0;
+  top: 0;
+  display: flex;              /* centre le contenu */
+  align-items: flex-start;    /* colle le bouton en haut */
+  height: auto;               /* pas de contrainte de hauteur */
+}
+
+.footer-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 160px; /* fixe largeur pour garder label & bouton */
+}
+
 .footer .timer, .footer .attempts {
   font-weight:900; color:#9a4e52;
   font-size:clamp(18px,2.8vw,28px);
 }
+
+.next-word-label {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.next-word-btn {
+  border: none;
+  background: var(--primary);
+  color: white;
+  font-size: 1.3rem;      /* la flèche est grande */
+  line-height: 1;       /* empêche le bouton de s'étirer verticalement */
+  height: 40px;         /* bouton compact */
+  width: 72px;          /* largeur fixe, adaptée à la flèche */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;   /* léger arrondi */
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  transition: background 0.25s ease, transform 0.15s ease;
+  font-family: Arial, sans-serif;	
+  padding: 0;           /* supprime l'espace intérieur inutile */
+}
+.next-word-btn:hover {
+  background: var(--primary-700);
+  transform: translateY(-2px);
+}
+
+.option-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  }
+
+.options-inline {
+  display: flex;
+  flex-wrap: wrap;        /* permet le retour à la ligne sur mobile */
+  justify-content: center; /* centre horizontalement */
+  gap: 20px;              /* espace horizontal ET vertical uniforme */
+  margin: 24px 0;         /* espace vertical autour du bloc */
+  text-align: center;
+}
+
+.options-group { 
+  margin-bottom: 24px;  /* même marge en bas pour toutes les sections */
+}
+
+.options-inline { 
+  margin: 28px 0;            /* haut = bas */
+}
+
+.option-toggles {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;   /* centré horizontalement */
+  column-gap: 24px;          /* espace horizontal entre options */
+  row-gap: 14px;             /* espace vertical entre lignes (mobile) */
+}
+
+
+#nextWordButton { display: none; }
 
 /* Tooltip */
 #pinyinTooltip {
@@ -224,151 +303,133 @@ button.selected { background:var(--primary); color:white; }
   pointer-events:none; z-index:2000;
 }
 
-/* Overlay & Modals */
-.overlay { 
-  display:none; 
-  position:fixed; 
-  inset:0; 
-  background:rgba(0,0,0,0.18); 
-  z-index:1200; 
+/* Inline validation (✔/✖) */
+.inline-validation {
+  position: absolute;
+  display: flex;
+  gap: 6px;
+  z-index: 2000;
 }
-
-.validation-modal, 
-.completion-message, 
-.word-modal {
-  display:none; 
-  position:fixed;          /* ✅ reste par défaut */
-  background:#fff; 
-  padding:20px; 
-  border-radius:14px;
-  box-shadow:0 18px 36px rgba(15,23,42,.2); 
-  z-index:1300; 
-  text-align:center;
+.iv-btn {
+  border: none;
+  border-radius: 50%;
+  width: 34px;
+  height: 34px;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  transition: transform 0.15s ease, background 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
 }
+.iv-btn.iv-yes { background: var(--green); color:white; }
+.iv-btn.iv-no  { background: var(--red); color:white; }
+.iv-btn:hover { transform: scale(1.1); }
 
-.validation-modal { 
-  min-width:min(300px,92vw); 
+/* ✅ Unified popup */
+.popup-box {
+  position: absolute;
+  background: #fff;
+  border-radius: 14px;
+  padding: 20px;
+  box-shadow: 0 8px 20px rgba(20,32,56,.15);
+  z-index: 3000;
+  text-align: center;
+  max-width: 90vw;
+  display:none;
+  contain: layout paint;
+  overflow-wrap: anywhere; 
 }
-
-.completion-message {
-  min-width:min(320px,92vw); 
-  top:50%; 
-  left:50%; 
-  transform:translate(-50%,-50%);
+.popup-box h3 {
+  margin-top:0;
+  color:var(--primary);
+  font-weight:800;
 }
-
-.word-modal {
-  top:50%; 
-  left:50%; 
-  transform:translate(-50%,-50%);
-  max-width:92vw; 
-  min-width:280px;
-}
-
-.modal-buttons { 
-  display:flex; 
-  gap:10px; 
-  margin-top:15px; 
-  justify-content:center; 
-}
-
-.completion-message .time {
-  font-size:1.6em; 
-  color:var(--primary-700); 
-  font-weight:800; 
-  margin:8px 0;
-}
-
-.word-card .cn {
+.popup-box .cn {
   font-family:'Noto Sans SC','Microsoft YaHei',sans-serif;
-  font-size:42px; 
-  font-weight:900; 
-  color:#2f86cf; 
+  font-size:42px;
+  font-weight:900;
+  color:#BC4B51;
   line-height:1.2;
 }
+.popup-box .py { color:#6b7280; margin-top:8px; font-size:18px; }
+.popup-box .def { color:#000; margin-top:6px; font-size:19px; font-weight: 600 }
 
-.word-card .py { 
-  color:#6b7280; 
-  margin-top:8px; 
-  font-size:18px; 
-  line-height:1.55; 
+/* Titre (Well done) */
+.popup-box .completion-title {
+  font-size: 1.6rem;      /* un peu plus petit */
+  font-weight: 800;
+  color: #9a1f2d;         /* rouge foncé */
+  margin-bottom: 12px;
 }
 
-.word-card .def { 
-  color:#111827; 
-  margin-top:6px; 
-  font-size:19px; 
-  line-height:1.6; 
+/* Libellés (Timer, Attempts) */
+.popup-box .result-stat {
+  font-size: 1.1rem;      /* plus discret */
+  font-weight: 600;
+  color: #444;            /* gris foncé, plus doux que noir pur */
+  margin: 6px 0;
 }
 
-/* ✅ MOBILE : seule la position change */
-@media (max-width:1024px) {
-  .completion-message,
-  .word-modal {
-    position:absolute;   /* 👉 change juste ça */
-  }
+.popup-box .modal-buttons {
+  margin-top: 13px; /* augmente la marge entre la définition et le bouton */
 }
 
-/* Mobile ajustements */
+/* Valeurs (01:04, 4/5) */
+.popup-box .result-value {
+  font-size: 1.4rem;      /* moins massif */
+  font-weight: 700;
+  color: #9a1f2d;         /* toujours rouge foncé */
+  display: block;
+  margin-top: 2px;
+}
+
+/* Cache la définition quand l’option est décochée */
+body.hide-def .popup-box .def { display: none !important; }
+
+#overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5); /* noir transparent */
+  display: none;                  /* caché par défaut */
+  z-index: 2500;                  /* juste sous les popups (z-index 3000) */
+}
+
+.next-word-container {
+  width: 100%;
+  max-width: var(--grid-outer);
+  display: flex;
+  justify-content: flex-end; /* aligné à droite */
+  margin-top: 10px;
+}
+
+
+.next-word-btn:hover {
+  background: var(--primary-700);
+  transform: translateX(3px); /* petit effet de mouvement */
+}
+
+/* Mobile tweaks */
 @media (max-width:520px) {
-  .panel-top {
-    font-size:clamp(24px,6vw,40px);
-    min-height:76px;
-  }
-  :root {
-    --cell:clamp(36px,10vw,56px);
-    --gap:clamp(5px,2vw,9px);
-  }
+  .panel-top { font-size:clamp(24px,6vw,40px); min-height:76px; }
+  :root { --cell:clamp(36px,10vw,56px); --gap:clamp(5px,2vw,9px); }
 }
 
-/* === Largeur calculée selon la grille === */
-:root {
-  --grid-outer: calc(var(--n) * var(--cell) + (var(--n) - 1) * var(--gap) + 28px);
-}
-
-/* ====== PC (>=1025px) ====== */
+/* Grid width calc */
+:root { --grid-outer: calc(var(--n) * var(--cell) + (var(--n) - 1) * var(--gap) + 28px); }
 @media (min-width:1025px) {
-  .page {
-    width:100%;
-    display:flex; flex-direction:column; align-items:center;
-    overflow-x:hidden;
-  }
-  #backBar, #panel, #gridWrap, #footerBar {
-    width:var(--grid-outer);
-    margin-left:auto; margin-right:auto;
-  }
-  #panel { display:flex; flex-direction:column; }
-  #panel .panel-top, #panel .panel-bottom { width:100%; }
+  #backBar,#panel,#gridWrap,#footerBar { width:var(--grid-outer); margin-left: auto;
+    margin-right: auto; }
 }
-
-/* ====== MOBILE (<=1024px) ====== */
 @media (max-width:1024px) {
-  .page {
-    width:100%;
-    overflow-x:auto;
-    -webkit-overflow-scrolling:touch;
-  }
-  #backBar, #panel, #gridWrap, #footerBar {
-    width:var(--grid-outer);
-    max-width:none; margin:0; display:block; box-sizing:border-box;
-  }
-  #gridOutline { display:inline-block; width:auto; max-width:none; }
-  #backBar { margin-bottom:12px; }
-  #panel {
-    display:block; border-radius:12px;
-    overflow:hidden; margin-bottom:24px;
-  }
-  #panel .panel-top, #panel .panel-bottom { width:100%; }
-  #footerBar { margin-top:24px; }
-  html,body { touch-action:pan-x pan-y pinch-zoom; }
+  #backBar,#panel,#gridWrap,#footerBar { width:var(--grid-outer); }
 }
-
-
-/* Reduced motion */
-@media (prefers-reduced-motion:reduce) {
-  * { transition:none!important; animation:none!important; }
-}
-
 </style>
 </head>
 <body>
@@ -378,7 +439,6 @@ button.selected { background:var(--primary); color:white; }
   <!-- MENU -->
   <div class="menu" id="menuScreen">
     <h1>中文 Word Search</h1>
-
     <div class="options-group">
       <h2>HSK Level</h2>
       <div class="options-buttons" id="hskLevelButtons">
@@ -390,7 +450,6 @@ button.selected { background:var(--primary); color:white; }
         <button data-level="6" class="toggle">HSK 6</button>
       </div>
     </div>
-
     <div class="options-group">
       <h2>Game Mode</h2>
       <div class="options-buttons" id="gameModeButtons">
@@ -400,7 +459,6 @@ button.selected { background:var(--primary); color:white; }
         <button data-mode="pinyin">Pinyin</button>
       </div>
     </div>
-
     <div class="options-group">
       <h2>Grid size</h2>
       <div class="options-buttons" id="gridSizeButtons">
@@ -411,75 +469,58 @@ button.selected { background:var(--primary); color:white; }
         <button data-size="13">13x13</button>
       </div>
     </div>
-
-    <div style="margin: 24px 0; text-align:center;">
-      <label style="display:inline-flex; align-items:center; gap:8px;">
-        <input type="checkbox" id="showPinyinCheckbox" />
-        Show pinyin on hover
-      </label>
-    </div>
-
-    <button id="startGame" style="width: 100%; margin-top: 20px;">Start Game</button>
+<div class="options-group options-inline">
+  <div class="option-toggles">
+    <label class="option-label">
+      <input type="checkbox" id="showDefinitionCheckbox"> Show definition
+    </label>
+    <label class="option-label">
+      <input type="checkbox" id="showPinyinCheckbox"> Show pinyin
+    </label>
+    <label class="option-label">
+      <input type="checkbox" id="showNextButtonCheckbox"> Show next button
+    </label>
   </div>
+</div>
+
+<button id="startGame">Start Game</button> </div>
 
   <!-- GAME -->
-  <div class="page" id="gameScreen" style="display:none;">
-    <div class="backbar" id="backBar">
-      <button id="backToMenu">← Back</button>
-    </div>
-
-    <div class="panel" id="panel">
-      <div class="panel-top" id="gridTitle">—</div>
-      <div class="panel-bottom">
-        <div class="words-bar" id="wordsBar"></div>
+<div class="page" id="gameScreen" style="display:none;">
+  <div class="backbar" id="backBar"><button id="backToMenu">← Back</button></div>
+  <div class="panel" id="panel">
+    <div class="panel-top" id="gridTitle">—</div>
+    <div class="panel-bottom"><div class="words-bar" id="wordsBar"></div></div>
+  </div>
+  <div class="grid-wrap" id="gridWrap">
+    <div id="scale" class="scale-container">
+      <div class="grid-outline" id="gridOutline">
+        <div class="highlight-layer"></div>
+        <div class="grid" id="grid" style="--n:5"></div>
       </div>
     </div>
-
-    <div class="grid-wrap" id="gridWrap">
-      <div id="scale" class="scale-container" style="transform-origin: top center; display:inline-block;">
-        <div class="grid-outline" id="gridOutline">
-		<div class="highlight-layer"></div>
-          <div class="grid" id="grid" style="--n:5"></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="footer" id="footerBar">
-      <div class="timer" id="gameTimer">00:00</div>
-      <div class="attempts" id="attemptCounter">Attempt: 0/0</div>
-    </div>
   </div>
-</div>
 
-<!-- Modals -->
-<div class="validation-modal" id="validationModal">
-  <h3>Confirm</h3>
-  <p>Selected word : <span id="selectedWord"></span></p>
-  <div class="modal-buttons">
-    <button class="btn" id="confirmSelection">Validate</button>
-    <button class="btn" id="cancelSelection">Cancel</button>
+  <div class="footer" id="footerBar">
+  <div class="footer-center">
+    <div class="timer" id="gameTimer">00:00</div>
+    <div class="attempts" id="attemptCounter">Attempt: 0/0</div>
   </div>
+  <div class="footer-right">
+    <button id="nextWordButton" class="next-word-btn">Next</button> </div>
+</div>
 </div>
 
-<div class="completion-message" id="completionMessage">
-  <h3>Well done!</h3>
-  <p>Time : <span id="finalTime" class="time">00:00</span></p>
-  <p>Attempts : <span id="finalAttempts">0/0</span></p>
-  <button class="btn" id="newGameButton" style="margin-top: 10px;">New game</button>
+<!-- Inline validation -->
+<div id="inlineValidation" class="inline-validation" style="display:none;">
+  <button id="inlineConfirm" class="iv-btn iv-yes">✔</button>
+  <button id="inlineCancel" class="iv-btn iv-no">✖</button>
 </div>
 
-<div class="word-modal" id="wordModal">
-  <div class="word-card">
-    <div class="cn" id="mCn">—</div>
-    <div class="py" id="mPy">—</div>
-    <div class="def" id="mDef">—</div>
-    <div class="modal-buttons" style="justify-content:flex-end">
-      <button class="btn" id="closeWordModal">Close</button>
-    </div>
-  </div>
-</div>
+<!-- ✅ Unique popup -->
+<div id="overlay"></div>
+<div id="popupBox" class="popup-box"></div>
 
-<div class="overlay" id="overlay"></div>
 
 <!-- Sample Data (HSK1 subset) -->
 <script>
@@ -10963,7 +11004,6 @@ const hsk6Words = [
 </script>
 
 <script>
-    
 /* =================== CONFIG =================== */
 const GRID_CONFIGS = {
   '5':  { size: 5,  wordCount: 4 },
@@ -10986,15 +11026,17 @@ const gameState = {
   selectedCells: [],
   wordsToFind: [],
   foundWords: new Set(),
-  foundOrder: [], // indices in wordsToFind
+  foundOrder: [],
   currentGrid: [],
   wordPlacements: [],
   startTime: null,
   timerInterval: null,
   showPinyin: false,
+  showDefinition: true, 
   attempts: 0
 };
 
+let popupAutoHide = null;
 
 
 /* =================== UTIL & DICTS =================== */
@@ -11019,31 +11061,10 @@ function getWordsForCurrentLevel() {
   }
   return combined;
 }
-
-// Unique fillers helpers
 function randomCJK() {
   const start = 0x4E00, end = 0x9FFF;
   const code = Math.floor(Math.random() * (end - start + 1)) + start;
   return String.fromCharCode(code);
-}
-function generateUniqueCJKForLevel(count, forbiddenSet, levelWords) {
-  const chars = new Set();
-
-  // Récupérer tous les caractères du niveau choisi
-  for (const w of levelWords) {
-    for (const ch of w.chinese) {
-      if (!forbiddenSet.has(ch)) {
-        chars.add(ch);
-      }
-    }
-  }
-
-  // Transformer en tableau et mélanger
-  const arr = Array.from(chars);
-  shuffleArray(arr);
-
-  // Retourner exactement le nombre demandé
-  return arr.slice(0, count);
 }
 function buildDictionarySetsAllLevels() {
   const lvlArr = lvl => (typeof window['hsk'+lvl+'Words'] !== 'undefined' ? window['hsk'+lvl+'Words'] : []);
@@ -11090,15 +11111,114 @@ function scanGridForWords(grid, dictSet) {
   return found;
 }
 
+/* =================== POPUP UNIQUE (centré sur la grille) =================== */
+function centerPopupOnGrid() {
+  const popup = document.getElementById("popupBox");
+  const gridOutline = document.getElementById("gridOutline");
+  if (!popup || !gridOutline) return;
+
+  // Mesurer la popup après affichage
+  const rectGrid = gridOutline.getBoundingClientRect();
+
+  // Position cible : centre de la grille
+  let targetLeft = window.scrollX + rectGrid.left + rectGrid.width / 2;
+  let targetTop  = window.scrollY + rectGrid.top  + rectGrid.height / 2;
+
+  // Mesures popup
+  const pw = popup.offsetWidth;
+  const ph = popup.offsetHeight;
+
+  // Garde une marge de 16px pour ne pas coller aux bords
+  const margin = 16;
+  const minLeft = window.scrollX + margin + pw / 2;
+  const maxLeft = window.scrollX + (document.documentElement.clientWidth - margin) - pw / 2;
+  const minTop  = window.scrollY + margin + ph / 2;
+  const maxTop  = window.scrollY + (window.innerHeight - margin) - ph / 2;
+
+  // Clamp (évite que la popup « tire » hors de l’écran)
+  targetLeft = Math.max(minLeft, Math.min(maxLeft, targetLeft));
+  targetTop  = Math.max(minTop,  Math.min(maxTop,  targetTop));
+
+  popup.style.position = "absolute";
+  popup.style.left = targetLeft + "px";
+  popup.style.top  = targetTop + "px";
+  popup.style.transform = "translate(-50%, -50%)";
+}
+
+function showPopup(type, data = {}) {
+  const popup = document.getElementById("popupBox");
+  const overlay = document.getElementById("overlay");
+  if (!popup) return;
+
+  let html = "";
+
+  if (type === "word") {
+    html = `
+      <div class="cn">${data.chinese}</div>
+      <div class="py">${data.pinyin ?? ""}</div>
+      ${data.translation ? `<div class="def">${data.translation}</div>` : ``}
+      ${data.closable ? `<div class="modal-buttons"><button class="btn" id="closePopup">Close</button></div>` : ""}
+    `;
+  }
+
+  if (type === "completion") {
+    html = `
+      <h3 class="completion-title">Well done!</h3>
+      <p class="result-stat">Time : <span class="result-value">${data.time}</span></p>
+      <p class="result-stat">Attempts : <span class="result-value">${data.attempts}</span></p>
+      <button class="btn" id="newGameButton">New game</button>
+    `;
+  }
+
+  popup.innerHTML = html;
+  popup.style.display = "block";
+  centerPopupOnGrid();
+  if (overlay && (type === "word" || type === "completion")) overlay.style.display = "block";
+
+  const closeBtn = document.getElementById("closePopup");
+  if (closeBtn) closeBtn.addEventListener("click", hidePopup);
+
+  const newGameBtn = document.getElementById("newGameButton");
+  if (newGameBtn) newGameBtn.addEventListener("click", () => { hidePopup(); showMenu(); });
+
+  // auto-fermeture uniquement pour les popups "word" non fermables (Next)
+  if (type === "word" && !data.closable) {
+    if (popupAutoHide) clearTimeout(popupAutoHide);
+    popupAutoHide = setTimeout(() => { hidePopup(); popupAutoHide = null; }, 2000);
+  }
+}
+
+
+function hidePopup() {
+  const popup = document.getElementById("popupBox");
+  const overlay = document.getElementById("overlay");
+  if (popup) popup.style.display = "none";
+  if (overlay) overlay.style.display = "none";
+}
+
 /* =================== INIT =================== */
 document.addEventListener('DOMContentLoaded', () => { initializeGame(); });
+
 function applyGridSizeCSS() {
   const sizes = ['5','7','9','11','13'];
   document.body.classList.remove(...sizes.map(s => `grid-size-${s}`));
   document.body.classList.add(`grid-size-${gameState.gridSize}`);
-
-  // keep --n in sync for the computed grid width
   document.documentElement.style.setProperty('--n', gameState.gridSize);
+}
+
+function ensureInlineValidationUI() {
+  let inline = document.getElementById('inlineValidation');
+  if (!inline) {
+    inline = document.createElement('div');
+    inline.id = 'inlineValidation';
+    inline.className = 'inline-validation';
+    inline.style.display = 'none';
+    inline.innerHTML = `
+      <button id="inlineConfirm" class="iv-btn iv-yes">✔</button>
+      <button id="inlineCancel" class="iv-btn iv-no">✖</button>
+    `;
+    document.body.appendChild(inline);
+  }
 }
 
 function initializeGame() {
@@ -11115,6 +11235,7 @@ function initializeGame() {
   gameState.timerInterval = null;
   gameState.attempts = 0;
 
+  // ✅ Option "Show pinyin on hover"
   const showPinyinCheckbox = document.getElementById('showPinyinCheckbox');
   if (showPinyinCheckbox) {
     gameState.showPinyin = showPinyinCheckbox.checked;
@@ -11123,6 +11244,34 @@ function initializeGame() {
     });
   }
 
+  // ✅ Option "Show definition"
+  const showDefinitionCheckbox = document.getElementById('showDefinitionCheckbox');
+  const applyDefVisibility = () => {
+    document.body.classList.toggle('hide-def', !gameState.showDefinition);
+  };
+  if (showDefinitionCheckbox) {
+    gameState.showDefinition = showDefinitionCheckbox.checked;
+    applyDefVisibility();
+    showDefinitionCheckbox.addEventListener('change', () => {
+      gameState.showDefinition = showDefinitionCheckbox.checked;
+      applyDefVisibility();
+    });
+  }
+
+  // ✅ Option "Show Next button"
+  const showNextButtonCheckbox = document.getElementById('showNextButtonCheckbox');
+  const nextWordButton = document.getElementById('nextWordButton');
+  if (showNextButtonCheckbox && nextWordButton) {
+    // applique l'état au démarrage
+    nextWordButton.style.display = showNextButtonCheckbox.checked ? 'flex' : 'none';
+
+    // écoute les changements
+    showNextButtonCheckbox.addEventListener('change', () => {
+      nextWordButton.style.display = showNextButtonCheckbox.checked ? 'flex' : 'none';
+    });
+  }
+
+  // Sélection des niveaux HSK
   document.querySelectorAll('#hskLevelButtons button').forEach(button => {
     button.addEventListener('click', () => {
       const level = parseInt(button.dataset.level);
@@ -11133,6 +11282,8 @@ function initializeGame() {
       if (startButton) startButton.disabled = gameState.selectedHskLevels.size === 0;
     });
   });
+
+  // Modes de jeu
   document.querySelectorAll('#gameModeButtons button').forEach(button => {
     button.addEventListener('click', () => {
       document.querySelectorAll('#gameModeButtons button').forEach(b => b.classList.remove('selected'));
@@ -11141,6 +11292,8 @@ function initializeGame() {
       renderWordsBar();
     });
   });
+
+  // Taille de la grille
   document.querySelectorAll('#gridSizeButtons button').forEach(button => {
     button.addEventListener('click', () => {
       document.querySelectorAll('#gridSizeButtons button').forEach(b => b.classList.remove('selected'));
@@ -11149,6 +11302,7 @@ function initializeGame() {
     });
   });
 
+  // Bouton start
   const startGameButton = document.getElementById('startGame');
   if (startGameButton) {
     startGameButton.addEventListener('click', () => {
@@ -11163,13 +11317,28 @@ function initializeGame() {
       }
     });
   }
-  document.getElementById('backToMenu').addEventListener('click', () => { stopTimer(); showMenu(); });
 
-  document.getElementById('confirmSelection').addEventListener('click', confirmSelection);
-  document.getElementById('cancelSelection').addEventListener('click', cancelSelection);
-  document.getElementById('newGameButton').addEventListener('click', () => { hideCompletionMessage(); showMenu(); });
-  document.getElementById('closeWordModal').addEventListener('click', closeWordModal);
+  // Retour menu
+  document.getElementById('backToMenu').addEventListener('click', () => {
+    stopTimer();
+    showMenu();
+  });
 
+  // ✅ Ajout event bouton Next Word
+  if (nextWordButton) {
+    nextWordButton.addEventListener("click", () => {
+      revealNextWord();
+    });
+  }
+
+  // ✔ / ✖ (inline)
+  ensureInlineValidationUI();
+  const confirmBtn = document.getElementById("inlineConfirm");
+  const cancelBtn  = document.getElementById("inlineCancel");
+  if (confirmBtn) confirmBtn.addEventListener("click", confirmSelection);
+  if (cancelBtn)  cancelBtn.addEventListener("click", cancelSelection);
+
+  // Clic sur grille
   const gridEl = document.getElementById('grid');
   gridEl.addEventListener('click', (event) => {
     const cell = event.target;
@@ -11180,29 +11349,89 @@ function initializeGame() {
     }
   });
 
+  // Overlay & clavier → ferme popup + inline
   document.getElementById('overlay').addEventListener('click', () => {
-    hideValidationModal(); hideCompletionMessage(); closeWordModal(); clearSelection();
+    hideInlineValidation();
+    hidePopup();
+    clearSelection();
   });
-
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') {
-      hideValidationModal(); hideCompletionMessage(); closeWordModal(); clearSelection();
-    } else if (event.key === 'Enter' && document.getElementById('validationModal').style.display === 'block') {
-      confirmSelection();
+      hideInlineValidation();
+      hidePopup();
+      clearSelection();
     }
   });
-window.addEventListener('resize', () => { 
-  if (gameState.currentGrid.length > 0) {
-    syncPanelWidthToGrid();
-	syncPanelWithGrid(); 
-  }
-});
 
-const hsk1btn = document.querySelector('#hskLevelButtons button[data-level="1"]');
-if (hsk1btn) hsk1btn.classList.add('selected');
+  // Resize → recentre popup + ajuste largeur
+  window.addEventListener('resize', () => {
+    if (gameState.currentGrid.length > 0) {
+      syncPanelWidthToGrid();
+      syncPanelWithGrid();
+    }
+    const popup = document.getElementById("popupBox");
+    if (popup && popup.style.display === "block") {
+      centerPopupOnGrid();
+    }
+  });
 
-showMenu();
+  // HSK niveau 1 sélectionné par défaut
+  const hsk1btn = document.querySelector('#hskLevelButtons button[data-level="1"]');
+  if (hsk1btn) hsk1btn.classList.add('selected');
+  
+  const startButton = document.getElementById('startGame');
+  if (startButton) startButton.disabled = gameState.selectedHskLevels.size === 0;
+
+  showMenu();
 }
+
+
+function revealNextWord() {
+  // sécurité : pas de partie en cours
+  if (!gameState.currentGrid || gameState.currentGrid.length === 0) return;
+
+  // cherche le premier mot non encore trouvé
+  const next = gameState.wordsToFind.find(w => !gameState.foundWords.has(w.chinese));
+  if (!next) { showCompletionMessage(); return; }
+
+  // ✅ on valide ce mot
+  gameState.foundWords.add(next.chinese);
+  const idx = gameState.wordsToFind.findIndex(w => w.chinese === next.chinese);
+  if (!gameState.foundOrder.includes(idx)) gameState.foundOrder.push(idx);
+
+  // maj de l'UI
+  updateFoundCellsColoring();
+  renderWordsBar();
+  updateAttemptCounter(); // pas d'augmentation d'attempts pour Next
+
+  // doit-on montrer la définition ?
+  const defChecked = document.getElementById('showDefinitionCheckbox');
+  const shouldShowDef = defChecked ? defChecked.checked : !!gameState.showDefinition;
+
+  // remplace toute popup existante et affiche celle du mot si nécessaire
+  hidePopup();
+  if (shouldShowDef) {
+    showPopup("word", {
+      chinese: next.chinese,
+      pinyin: next.pinyin,
+      translation: next.translation, // si l’option est décochée on ne passe rien
+      closable: false                 // auto-fermeture (2s)
+    });
+  }
+
+  // si tout est trouvé → écran final (après la popup si elle s’affiche)
+  const allFound = gameState.foundWords.size === gameState.wordsToFind.length;
+  if (allFound) {
+    if (shouldShowDef) {
+      if (popupAutoHide) clearTimeout(popupAutoHide);
+      popupAutoHide = setTimeout(() => { hidePopup(); showCompletionMessage(); popupAutoHide = null; }, 2000);
+    } else {
+      showCompletionMessage();
+    }
+  }
+}
+
+
 
 /* =================== START/STOP =================== */
 function startGame() {
@@ -11231,7 +11460,6 @@ function startGame() {
   document.getElementById('menuScreen').style.display = 'none';
   document.getElementById('gameScreen').style.display = 'block';
 
-  // ✅ applique la classe CSS grid-size-*
   applyGridSizeCSS();
 
   gameState.foundWords.clear();
@@ -11248,26 +11476,27 @@ function startGame() {
   renderGrid();
   renderWordsBar();
 
-  // ✅ Titre = X WORDS
   document.getElementById('gridTitle').textContent = `${gameState.wordsToFind.length} WORDS`;
 }
 
-
-
 function showMenu() {
-  // ✅ restaure viewport fixe (pas de dézoom sur l’accueil)
   const vp = document.getElementById('viewportMeta');
   if (vp) {
-    vp.setAttribute(
-      'content',
-      'width=device-width, initial-scale=1, user-scalable=no'
-    );
+    vp.setAttribute('content','width=device-width, initial-scale=1, user-scalable=no');
   }
+
+  const overlay = document.getElementById('overlay');
+  if (overlay) overlay.style.display = 'none';
+
+  hidePopup();              // ferme popup s’il en reste un
+  hideInlineValidation();   // 👈 cache les boutons ✔ / ✖
+  clearSelection();         // réinitialise la sélection de cellules
 
   document.getElementById('gameScreen').style.display = 'none';
   document.getElementById('menuScreen').style.display = 'block';
   resetGame();
 }
+
 
 function resetGame() {
   gameState.foundWords.clear();
@@ -11277,9 +11506,14 @@ function resetGame() {
   gameState.currentGrid = [];
   gameState.wordsToFind = [];
   gameState.attempts = 0;
+
   stopTimer();
   updateAttemptCounter();
+
+  hideInlineValidation();  // 👈 au cas où ✔ / ✖ seraient encore visibles
+  clearSelection();        // 👈 nettoie aussi la sélection en cours
 }
+
 
 /* =================== GRID GEN =================== */
 function generateGrid() {
@@ -11312,7 +11546,7 @@ function generateGrid() {
       const direction = DIRECTIONS[Math.floor(Math.random() * DIRECTIONS.length)];
       if (canPlaceWord(word.chinese, x, y, direction, grid)) {
         placeWord(word.chinese, x, y, direction, grid);
-        gameState.wordsToFind.push(word); // ✅ mot ajouté à la liste
+        gameState.wordsToFind.push(word);
         placed = true;
       }
       attempts++;
@@ -11320,14 +11554,10 @@ function generateGrid() {
     if (!placed) { return generateGrid(); }
   }
 
-  // ==================== FILLERS (même niveau sélectionné) + anti-accident ====================
-
-  // 1) caractères présents dans les mots placés
+  // ====== FILLERS (même niveau) + anti-accident ======
   const placedWordChars = new Set();
   for (const p of gameState.wordPlacements) for (const ch of p.word) placedWordChars.add(ch);
 
-  // 2) pool autorisé = tous les caractères des mots des niveaux sélectionnés (availableWords),
-  //    en excluant ceux déjà utilisés par les mots placés
   const allowedFillersSet = new Set();
   for (const w of availableWords) for (const ch of w.chinese) {
     if (!placedWordChars.has(ch)) allowedFillersSet.add(ch);
@@ -11338,7 +11568,6 @@ function generateGrid() {
     return generateGrid();
   }
 
-  // 3) lister les cases vides
   const emptyPositions = [];
   for (let y = 0; y < gameState.gridSize; y++) {
     for (let x = 0; x < gameState.gridSize; x++) {
@@ -11346,47 +11575,42 @@ function generateGrid() {
     }
   }
 
-  // 4) dictionnaire global et set des mots placés
   const dictAll = buildDictionarySetsAllLevels();
   const placedSet = placedWordsSet();
 
-function isDangerousPlacement(char, x, y, grid, placedSet, dictAll) {
-  const dirs = [[1,0],[-1,0],[0,1],[0,-1]]; // droite, gauche, bas, haut
-  const placedPositions = getPlacedPositions(); // toutes les cases occupées par des mots valides
+  function isDangerousPlacement(char, x, y, grid, placedSet, dictAll) {
+    const dirs = [[1,0],[-1,0],[0,1],[0,-1]];
+    const placedPositions = getPlacedPositions();
 
-  for (const [dx,dy] of dirs) {
-    const nx = x + dx, ny = y + dy;
-    if (nx < 0 || ny < 0 || nx >= gameState.gridSize || ny >= gameState.gridSize) continue;
-    const neighbor = grid[ny][nx];
-    if (!neighbor) continue;
+    for (const [dx,dy] of dirs) {
+      const nx = x + dx, ny = y + dy;
+      if (nx < 0 || ny < 0 || nx >= gameState.gridSize || ny >= gameState.gridSize) continue;
+      const neighbor = grid[ny][nx];
+      if (!neighbor) continue;
 
-    // construire les 2 combinaisons possibles (ordre)
-    const candidate1 = neighbor + char;
-    const candidate2 = char + neighbor;
+      const candidate1 = neighbor + char;
+      const candidate2 = char + neighbor;
 
-    // ⚠️ si le voisin fait partie d’un mot placé → on doit être ultra strict
-    const neighborKey = `${ny},${nx}`;
-    const neighborIsPlaced = placedPositions.has(neighborKey);
+      const neighborKey = `${ny},${nx}`;
+      const neighborIsPlaced = placedPositions.has(neighborKey);
 
-    if (dictAll.has(candidate1) && !placedSet.has(candidate1)) {
-      if (neighborIsPlaced) return true; // interdit si voisin = mot placé
+      if (dictAll.has(candidate1) && !placedSet.has(candidate1)) {
+        if (neighborIsPlaced) return true;
+      }
+      if (dictAll.has(candidate2) && !placedSet.has(candidate2)) {
+        if (neighborIsPlaced) return true;
+      }
     }
-    if (dictAll.has(candidate2) && !placedSet.has(candidate2)) {
-      if (neighborIsPlaced) return true; // interdit si voisin = mot placé
-    }
+    return false;
   }
-  return false;
-}
 
-
-  // 5) fonction qui (re)remplit les cases vides en piochant au hasard dans allowedFillers
   function rollFillers() {
     for (const pos of emptyPositions) {
       let pick, tries = 0;
       do {
         pick = allowedFillers[Math.floor(Math.random() * allowedFillers.length)];
         tries++;
-        if (tries > 50) break; // sécurité anti-boucle infinie
+        if (tries > 50) break;
       } while (isDangerousPlacement(pick, pos.x, pos.y, grid, placedSet, dictAll));
 
       grid[pos.y][pos.x] = pick;
@@ -11394,7 +11618,6 @@ function isDangerousPlacement(char, x, y, grid, placedSet, dictAll) {
   }
   rollFillers();
 
-  // 6) anti-accident : on refuse tout autre mot HSK (tous niveaux) que ceux placés
   function reshuffleOnlyFillers() {
     rollFillers();
   }
@@ -11409,9 +11632,7 @@ function isDangerousPlacement(char, x, y, grid, placedSet, dictAll) {
   if (unintended.length > 0) {
     return generateGrid();
   }
-  // ==================== FIN FILLERS ====================
 
-  // Vérifier que tous les mots ont bien été placés
   if (gameState.wordsToFind.length !== numWords) {
     console.warn("⚠️ Tous les mots n'ont pas été placés, on relance la génération...");
     return generateGrid();
@@ -11419,8 +11640,6 @@ function isDangerousPlacement(char, x, y, grid, placedSet, dictAll) {
 
   return grid;
 }
-
-
 
 function canPlaceWord(word, startX, startY, direction, grid) {
   const { dx, dy } = direction;
@@ -11444,13 +11663,11 @@ function placeWord(word, startX, startY, direction, grid) {
 
 /* =================== RENDER =================== */
 function renderGrid() {
-  // on garde juste --n à jour
   const gridEl = document.getElementById('grid');
   gridEl.style.setProperty('--n', gameState.gridSize);
   document.documentElement.style.setProperty('--n', gameState.gridSize);
   gridEl.innerHTML = '';
 
-  // cellules
   gameState.currentGrid.forEach((row, i) => {
     row.forEach((cell, j) => {
       const d = document.createElement('div');
@@ -11460,45 +11677,47 @@ function renderGrid() {
       d.dataset.col = j;
       gridEl.appendChild(d);
 
-      // tooltips pinyin (inchangé)
+      // tooltips pinyin
       d.addEventListener('mouseenter', (e) => {
-  if (!gameState.showPinyin) return;
-  const char = e.target.textContent;
-  if (pinyinDict[char]) {
-    const contenu = pinyinDict[char];
-    const x = e.pageX + 10;
-    const y = e.pageY + 10;
+        if (!gameState.showPinyin) return;
+        const char = e.target.textContent;
+        if (pinyinDict[char]) {
+          const contenu = pinyinDict[char];
+          const x = e.pageX + 10;
+          const y = e.pageY + 10;
 
-    if (isMobile) {
-      showTooltipWithTimeout(contenu, x, y);
-    } else {
-      tooltip.innerHTML = contenu;
-      tooltip.style.left = x + "px";
-      tooltip.style.top = y + "px";
-      tooltip.style.display = "block";
-    }
-  }
-});
+          if (isMobile) {
+            showTooltipWithTimeout(contenu, x, y);
+          } else {
+            const tip = document.getElementById('pinyinTooltip');
+            if (!tip) return;
+            tip.innerHTML = contenu;
+            tip.style.left = x + "px";
+            tip.style.top  = y + "px";
+            tip.style.display = "block";
+          }
+        }
+      });
+
       d.addEventListener('mousemove', (e) => {
         if (!gameState.showPinyin) return;
-        const tooltip = document.getElementById('pinyinTooltip');
-        tooltip.style.left = (e.pageX + 10) + 'px';
-        tooltip.style.top  = (e.pageY + 10) + 'px';
+        const tip = document.getElementById('pinyinTooltip');
+        if (!tip) return;
+        tip.style.left = (e.pageX + 10) + 'px';
+        tip.style.top  = (e.pageY + 10) + 'px';
       });
-      d.addEventListener('mouseleave', () => { 
-        document.getElementById('pinyinTooltip').style.display = 'none'; 
+
+      d.addEventListener('mouseleave', () => {
+        const tip = document.getElementById('pinyinTooltip');
+        if (tip) tip.style.display = 'none';
       });
     });
   });
 
-  // largeur/alignements (tes fonctions existantes)
   syncPanelWidthToGrid();
   syncPanelWithGrid();
   updateFoundCellsColoring();
 }
-
-
-
 
 function syncPanelWidthToGrid() {
   const outline = document.getElementById('gridOutline');
@@ -11520,18 +11739,15 @@ function syncPanelWithGrid() {
   const gridWidth = gridOutline.offsetWidth;
 
   if (window.innerWidth > 1024) {
-    // PC → largeur fixe sur la grille
     [backBar, panel, footer].forEach(el => {
       if (el) el.style.width = gridWidth + "px";
     });
   } else {
-    // Mobile → reset pour laisser le CSS gérer
     [backBar, panel, footer].forEach(el => {
       if (el) el.style.width = "";
     });
   }
 }
-
 
 function renderWordsBar() {
   const bar = document.getElementById('wordsBar');
@@ -11564,9 +11780,6 @@ function renderWordsBar() {
   });
 }
 
-
-
-
 const COLOR_CLASSES = ['blue','red','violet','green','orange'];
 const wordColors = {};
 let colorQueue = [];
@@ -11578,9 +11791,8 @@ function shuffleColors() {
 
 function getWordColor(word) {
   if (!wordColors[word]) {
-    // Si la queue est vide ou déjà utilisée pour 5 mots, on régénère
     if (colorQueue.length === 0 || colorIndex >= COLOR_CLASSES.length) {
-      colorQueue = shuffleColors();  // mélange aléatoire des 5 couleurs
+      colorQueue = shuffleColors();
       colorIndex = 0;
     }
     wordColors[word] = colorQueue[colorIndex];
@@ -11593,19 +11805,16 @@ function updateFoundCellsColoring() {
   const layer = document.querySelector('.highlight-layer');
   if (!layer) return;
 
-  // 1) Effacer les bandes existantes
   layer.innerHTML = '';
 
-  // 2) Retirer l'ancien marquage texte
   document.querySelectorAll('.cell.is-highlighted')
     .forEach(c => c.classList.remove('is-highlighted'));
 
-  // 3) Redessiner chaque mot trouvé (bande + texte blanc)
   gameState.wordPlacements.forEach((placement) => {
     if (!gameState.foundWords.has(placement.word)) return;
     const color = getWordColor(placement.word);
-    markPlacementCells(placement, color);   // bande continue
-    applyTextWhite(placement);              // texte blanc sur les cellules
+    markPlacementCells(placement, color);
+    applyTextWhite(placement);
   });
 }
 function applyTextWhite(placement) {
@@ -11625,7 +11834,6 @@ function markPlacementCells(placement, colorClass) {
   const dir = DIRECTIONS.find(d => d.name === placement.direction);
   if (!dir) return;
 
-  // start & end cells (end goes "backwards" if direction is reversed)
   const startRow = placement.start.y;
   const startCol = placement.start.x;
   const endRow   = startRow + dir.dy * (placement.word.length - 1);
@@ -11635,18 +11843,15 @@ function markPlacementCells(placement, colorClass) {
   const endEl   = document.querySelector(`[data-row="${endRow}"][data-col="${endCol}"]`);
   if (!startEl || !endEl) return;
 
-  // precise geometry (sub-pixel friendly)
   const r1 = startEl.getBoundingClientRect();
   const r2 = endEl.getBoundingClientRect();
   const rl = layer.getBoundingClientRect();
 
-  // bounding box of the word
   let left   = Math.min(r1.left, r2.left) - rl.left;
   let top    = Math.min(r1.top,  r2.top)  - rl.top;
   let width  = Math.abs(r2.left - r1.left) + r1.width;
   let height = Math.abs(r2.top  - r1.top)  + r1.height;
 
-  // constrain to the axis actually used
   if (dir.dx !== 0 && dir.dy === 0) { // horizontal
     height = r1.height;
   }
@@ -11662,29 +11867,102 @@ function markPlacementCells(placement, colorClass) {
   hl.style.height = height + 'px';
   layer.appendChild(hl);
 }
-/* =================== SELECTION =================== */
-function handleCellClick(row, col) {
-  const cell = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
-  if (gameState.selectedCells.length === 0) {
-    gameState.selectedCells.push({row, col});
-    cell.classList.add('selected');
-  } else {
-    const start = gameState.selectedCells[0];
-    const end = {row, col};
-    if (start.row === end.row && start.col === end.col) { clearSelection(); return; }
-    const dx = Math.sign(end.col - start.col);
-    const dy = Math.sign(end.row - start.row);
-    if (dx !== 0 && dy !== 0) { clearSelection(); return; }
-    const cellsBetween = getCellsBetween(start, end);
-    cellsBetween.forEach(pos => {
-      const c = document.querySelector(`[data-row="${pos.row}"][data-col="${pos.col}"]`);
-      if (c) c.classList.add('selected');
-    });
-    gameState.selectedCells = cellsBetween;
-    document.getElementById('selectedWord').textContent = getSelectedWord();
-    showValidationModal();
+
+/* =================== INLINE VALIDATION =================== */
+function hideInlineValidation() {
+  const el = document.getElementById("inlineValidation");
+  if (el) {
+    el.style.display = "none";
+    el.style.visibility = "hidden";
+    el.style.left = "-9999px";
+    el.style.top = "-9999px";
   }
 }
+function showInlineValidation() {
+  if (gameState.selectedCells.length === 0) return;
+  const inlineBox = document.getElementById("inlineValidation");
+
+  inlineBox.style.display = "flex";
+  inlineBox.style.visibility = "visible";
+
+  const boxWidth = inlineBox.offsetWidth;
+  const boxHeight = inlineBox.offsetHeight;
+
+  const rows = gameState.selectedCells.map(c => c.row);
+  const cols = gameState.selectedCells.map(c => c.col);
+  const minRow = Math.min(...rows);
+  const maxRow = Math.max(...rows);
+  const minCol = Math.min(...cols);
+  const maxCol = Math.max(...cols);
+
+  const firstCell = document.querySelector(`[data-row="${minRow}"][data-col="${minCol}"]`);
+  const lastCell  = document.querySelector(`[data-row="${maxRow}"][data-col="${maxCol}"]`);
+  if (!firstCell || !lastCell) {
+    inlineBox.style.display = "none";
+    return;
+  }
+
+  const r1 = firstCell.getBoundingClientRect();
+  const r2 = lastCell.getBoundingClientRect();
+  const gridRect = document.getElementById("gridOutline").getBoundingClientRect();
+
+  const centerX = (r1.left + r1.width/2 + r2.left + r2.width/2) / 2 + window.scrollX;
+  const topY    = Math.min(r1.top, r2.top) + window.scrollY;
+  const bottomY = Math.max(r1.bottom, r2.bottom) + window.scrollY;
+
+  // Par défaut → au-dessus
+  let top = topY - boxHeight - 8;
+
+  // Si ça dépasse la bordure haute de la grille → en dessous
+  if (top < gridRect.top + window.scrollY) {
+    top = bottomY + 8;
+  }
+
+  inlineBox.style.left = (centerX - boxWidth / 2) + "px";
+  inlineBox.style.top  = top + "px";
+}
+
+/* =================== SELECTION & VALIDATION =================== */
+function handleCellClick(row, col) {
+  const cell = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
+  if (!cell) return;
+
+  if (gameState.selectedCells.length === 0) {
+    clearSelection();
+    gameState.selectedCells = [{ row, col }];
+    cell.classList.add('selected');
+    return;
+  }
+
+  const start = gameState.selectedCells[0];
+
+  if (row === start.row && col === start.col) {
+    clearSelection();
+    hideInlineValidation();
+    return;
+  }
+
+  const dx = Math.sign(col - start.col);
+  const dy = Math.sign(row - start.row);
+  if (dx !== 0 && dy !== 0) {
+    clearSelection();
+    hideInlineValidation();
+    gameState.selectedCells = [{ row, col }];
+    cell.classList.add('selected');
+    return;
+  }
+
+  const cellsBetween = getCellsBetween(start, { row, col });
+  document.querySelectorAll('.cell.selected').forEach(c => c.classList.remove('selected'));
+  for (const pos of cellsBetween) {
+    const c = document.querySelector(`[data-row="${pos.row}"][data-col="${pos.col}"]`);
+    if (c) c.classList.add('selected');
+  }
+  gameState.selectedCells = cellsBetween;
+
+  showInlineValidation();
+}
+
 function getCellsBetween(start, end) {
   const cells = [];
   const dx = Math.sign(end.col - start.col);
@@ -11695,141 +11973,118 @@ function getCellsBetween(start, end) {
   }
   return cells;
 }
-function getSelectedWord() { return gameState.selectedCells.map(pos => gameState.currentGrid[pos.row][pos.col]).join(''); }
+function getSelectedWord() {
+  return gameState.selectedCells.map(pos => gameState.currentGrid[pos.row][pos.col]).join('');
+}
 
 function validateSelection() {
   const selectedWord = getSelectedWord();
   if (selectedWord.length < 2) return false;
+
   const reverseSelectedWord = selectedWord.split('').reverse().join('');
   if ([selectedWord, reverseSelectedWord].some(w => gameState.foundWords.has(w))) return false;
-  const foundPlacement = gameState.wordPlacements.find(p => p.word === selectedWord || p.word === reverseSelectedWord);
-  if (foundPlacement && gameState.foundWords.size < gameState.wordsToFind.length) {
+
+  const foundPlacement = gameState.wordPlacements.find(
+    p => p.word === selectedWord || p.word === reverseSelectedWord
+  );
+
+  if (foundPlacement) {
     const foundWord = gameState.wordsToFind.find(w => w.chinese === foundPlacement.word);
     if (foundWord) {
       gameState.foundWords.add(foundWord.chinese);
       const idx = gameState.wordsToFind.findIndex(w => w.chinese === foundWord.chinese);
       if (!gameState.foundOrder.includes(idx)) gameState.foundOrder.push(idx);
-      if (gameState.foundWords.size === gameState.wordsToFind.length) setTimeout(showCompletionMessage, 300);
-      return true;
+      return foundWord; // ✅ on retourne l’objet mot trouvé
     }
   }
-  return false;
+
+  return null;
 }
+
 
 function confirmSelection() {
   if (typeof gameState.attempts !== 'number') gameState.attempts = 0;
   gameState.attempts++;
-  const ok = validateSelection();
-  if (ok) {
-    updateFoundCellsColoring();
+
+  const foundWord = validateSelection();
+  if (foundWord) {
+  updateFoundCellsColoring();
+
+  // ✅ Afficher la popup auto SEULEMENT si showDefinition est actif
+  if (gameState.showDefinition) {
+    showPopup("word", {
+      chinese: foundWord.chinese,
+      pinyin: foundWord.pinyin,
+      translation: foundWord.translation,
+      closable: false
+    });
   }
+
+  // ✅ Si c’était le dernier mot → après 2s seulement → fenêtre finale
+  if (gameState.foundWords.size === gameState.wordsToFind.length) {
+    setTimeout(showCompletionMessage, gameState.showDefinition ? 2000 : 0);
+  }
+}
+
   renderWordsBar();
   updateAttemptCounter();
-  hideValidationModal();
+  hideInlineValidation();
   clearSelection();
 }
-function cancelSelection() { hideValidationModal(); clearSelection(); }
+
+function cancelSelection() {
+  hideInlineValidation();
+  clearSelection();
+}
 function clearSelection() {
   document.querySelectorAll('.cell.selected').forEach(c => c.classList.remove('selected'));
   gameState.selectedCells = [];
 }
 
-/* =================== MODALS & FOOTER =================== */
-function showValidationModal() {
-  const vm = document.getElementById('validationModal');
-  vm.style.display = 'block';
-  document.getElementById('overlay').style.display = 'block';
-  placeValidationModal();
-}
-function hideValidationModal() {
-  document.getElementById('validationModal').style.display = 'none';
-  document.getElementById('overlay').style.display = 'none';
-}
-function placeValidationModal(){
-  const modal = document.getElementById('validationModal');
-  const outline = document.getElementById('gridOutline');
-  if (!modal || !outline || modal.style.display !== 'block') return;
-  const r = outline.getBoundingClientRect();
-  const mw = Math.min(modal.offsetWidth || 320, window.innerWidth * 0.9);
-  const left = Math.round(r.left + (r.width - mw)/2);
-  const top  = Math.round(r.top + (r.height - modal.offsetHeight)/2);
-  modal.style.position = 'fixed';
-  modal.style.left = left + 'px';
-  modal.style.top  = top + 'px';
-  const maxTop = window.innerHeight - modal.offsetHeight - 8;
-  if (parseInt(modal.style.top,10) > maxTop) modal.style.top = maxTop + 'px';
-}
-
+/* =================== POPUPS DE COMMANDE =================== */
 function showCompletionMessage() {
   stopTimer();
   const finalTime = document.getElementById('gameTimer').textContent;
-  document.getElementById('finalTime').textContent = finalTime;
   const found = gameState.foundWords.size;
   const attempts = gameState.attempts || 0;
-  const fa = document.getElementById('finalAttempts');
-  if (fa) fa.textContent = `${found}/${attempts}`;
 
-  const modal = document.getElementById('completionMessage');
-  modal.style.display = 'block';
-  document.getElementById('overlay').style.display = 'block';
-
-  // 👉 Recentrer par rapport à la grille sur mobile
-  if (window.innerWidth <= 1024) {
-    const gridOutline = document.getElementById('gridOutline');
-    if (gridOutline) {
-      const rect = gridOutline.getBoundingClientRect();
-
-      modal.style.position = 'absolute';
-      modal.style.top = window.scrollY + rect.top + rect.height / 2 + 'px';
-      modal.style.left = window.scrollX + rect.left + rect.width / 2 + 'px';
-      modal.style.transform = 'translate(-50%, -50%)';
-    }
-  } else {
-    // 👉 PC = reste centré sur l’écran
-    modal.style.position = 'fixed';
-    modal.style.top = '50%';
-    modal.style.left = '50%';
-    modal.style.transform = 'translate(-50%, -50%)';
-  }
+  showPopup("completion", { 
+    time: finalTime, 
+    attempts: `${found}/${attempts}` 
+  });
 }
-function hideCompletionMessage() {
-  document.getElementById('completionMessage').style.display = 'none';
-  document.getElementById('overlay').style.display = 'none';
-}
-
 function openWordModal(word) {
-  const modal = document.getElementById('wordModal');
-  document.getElementById('mCn').textContent = word.chinese;
-  document.getElementById('mPy').textContent = word.pinyin;
-  document.getElementById('mDef').textContent = word.translation;
-
-  modal.style.display = 'block';
-  document.getElementById('overlay').style.display = 'block';
-
-  // 👉 Aligner avec la grille
-  const gridOutline = document.getElementById('gridOutline');
-  if (gridOutline) {
-    const rect = gridOutline.getBoundingClientRect();
-
-    modal.style.position = 'absolute';
-    modal.style.top = window.scrollY + rect.top + rect.height / 2 + 'px';
-    modal.style.left = window.scrollX + rect.left + rect.width / 2 + 'px';
-    modal.style.transform = 'translate(-50%, -50%)';
-  }
+  // Popup fermable (depuis la liste) AVEC overlay
+  showPopup("word", { 
+    chinese: word.chinese, 
+    pinyin: word.pinyin, 
+    translation: word.translation,
+    closable: true
+  });
 }
 
-function closeWordModal() {
-  document.getElementById('wordModal').style.display = 'none';
-  document.getElementById('overlay').style.display = 'none';
-}
+let currentWordIndex = -1;
 
+
+// ✅ Brancher l’événement une fois la page chargée
+document.addEventListener("DOMContentLoaded", () => {
+  const btn = document.getElementById("nextWordButton");
+  if (btn) btn.addEventListener("click", showNextWord);
+});
+
+/* =================== TIMER & FOOTER =================== */
 function startTimer() {
   gameState.startTime = Date.now();
   if (gameState.timerInterval) { clearInterval(gameState.timerInterval); gameState.timerInterval = null; }
   updateTimer();
   gameState.timerInterval = setInterval(updateTimer, 1000);
 }
-function stopTimer() { if (gameState.timerInterval) { clearInterval(gameState.timerInterval); gameState.timerInterval = null; } }
+function stopTimer() {
+  if (gameState.timerInterval) {
+    clearInterval(gameState.timerInterval);
+    gameState.timerInterval = null;
+  }
+}
 function updateTimer() {
   if (!gameState.startTime) return;
   const diff = Math.floor((Date.now() - gameState.startTime) / 1000);
@@ -11844,32 +12099,41 @@ function updateAttemptCounter() {
   if (el) el.textContent = `Attempt: ${found}/${attempts}`;
 }
 
- /* =====================================
-   AJOUT : Gestion auto du tooltip mobile
+/* =====================================
+   Tooltip pinyin mobile
 ====================================== */
 const tooltip = document.getElementById("pinyinTooltip");
 const isMobile = /Mobi|Android/i.test(navigator.userAgent);
 
+// durée fixe d’affichage (ms)
+const TOOLTIP_DURATION = 2000;
+let tooltipTimer = null;
+
+function showTooltipWithTimeout(content, x, y) {
+  tooltip.innerHTML = content;
+  tooltip.style.left = x + "px";
+  tooltip.style.top  = y + "px";
+  tooltip.style.display = "block";
+
+  // reset timer si déjà en cours
+  if (tooltipTimer) clearTimeout(tooltipTimer);
+
+  tooltipTimer = setTimeout(() => {
+    tooltip.style.display = "none";
+    tooltipTimer = null;
+  }, TOOLTIP_DURATION);
+}
+
+// ✅ Pour mobile : clic/tap à l’extérieur ferme immédiatement
 if (isMobile) {
   document.addEventListener("touchstart", function(e) {
     if (!tooltip.contains(e.target)) {
       tooltip.style.display = "none";
+      if (tooltipTimer) clearTimeout(tooltipTimer);
     }
   });
-
-  window.showTooltipWithTimeout = function(content, x, y) {
-    tooltip.innerHTML = content;
-    tooltip.style.left = x + "px";
-    tooltip.style.top = y + "px";
-    tooltip.style.display = "block";
-
-    setTimeout(() => {
-      tooltip.style.display = "none";
-    }, 1000); // ✅ 1 seconde
-  };
 }
-
-
 </script>
+
 </body>
 </html>
