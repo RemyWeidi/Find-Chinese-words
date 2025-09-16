@@ -55,8 +55,23 @@ html,body {
 
 #startGame {
   width: 100%;
-  margin-top: 24px !important; /* égal au bas du bloc d’options */
+  margin-top: 12px !important;
+  background: var(--primary);   /* fond rouge directement */
+  color: white;                 /* texte blanc */
+  font-size: 1.2rem;            /* texte plus grand */
+  font-weight: 800;             /* texte plus gras */
+  border: none;                 /* pas de bordure grise */
+  border-radius: 12px;          /* angles plus arrondis */
+  padding: 14px 18px;           /* bouton plus haut */
+  box-shadow: 0 6px 16px rgba(0,0,0,0.15); /* ombre pour le relief */
+  transition: all 0.25s ease;
 }
+
+#startGame:hover {
+  background: var(--primary-700);  /* rouge plus foncé au survol */
+  transform: translateY(-2px);     /* petit effet de "saut" */
+}
+
 button {
   padding:10px 15px; border:1px solid #ddd; border-radius:10px;
   background:white; cursor:pointer; transition:.2s ease;
@@ -451,6 +466,12 @@ button.selected { background:var(--primary); color:white; }
   }
   .popup-box .result-value {
     font-size: 1.8rem;        /* valeurs (temps, score) */
+  }
+}
+
+@media (min-width:1025px) {
+  #startGame {
+    margin-bottom: 30px; /* espace sous le bouton */
   }
 }
 
