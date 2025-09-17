@@ -428,6 +428,7 @@ button.selected { background:var(--primary); color:white; }
   transform: translateX(3px); /* petit effet de mouvement */
 }
 
+
 /* Mobile tweaks */
 @media (max-width:520px) {
   .panel-top { font-size:clamp(24px,6vw,40px); min-height:76px; }
@@ -3244,6 +3245,8 @@ button.selected { background:var(--primary); color:white; }
     "摹": "mó",
     "桐": "tóng",
     "谘": "zī",
+	"爆": "bào",
+	"炸": "zhà",
     "弁": "biàn",
     "贻": "yí",
     "悼": "dào",
@@ -4102,8 +4105,6 @@ button.selected { background:var(--primary); color:white; }
     "琐": "suǒ",
     "湫": "jiǎo / qīu",
     "琰": "yǎn",
-	"爆": "bào",
-	"炸": "zhà"			  
     "吨": "dūn / dùn",
     "酱": "jiàng",
     "矛": "máo",
@@ -5582,6 +5583,11 @@ button.selected { background:var(--primary); color:white; }
     "篙": "gāo",
     "嗵": "tōng",
 };
+Object.keys(pinyinDict).forEach(key => {
+  if (pinyinDict[key]) {
+    pinyinDict[key] = pinyinDict[key].normalize("NFC");
+  }
+});
   </script>
   <script>
 ﻿const hsk1Words = [
