@@ -11160,16 +11160,22 @@ function findAllInString(s, dictSet) {
 function scanGridForWords(grid, dictSet) {
   const found = new Set();
   const N = grid.length;
-  for (let r=0;r<N;r++) {
+
+  // lignes
+  for (let r = 0; r < N; r++) {
     const row = grid[r].join('');
     findAllInString(row, dictSet).forEach(w => found.add(w));
     findAllInString([...row].reverse().join(''), dictSet).forEach(w => found.add(w));
   }
-  for (let c=0;c<N;c++) {
-    let col=''; for (let r=0;r<N;r++) col+=grid[r][c];
+
+  // colonnes
+  for (let c = 0; c < N; c++) {
+    let col = '';
+    for (let r = 0; r < N; r++) col += grid[r][c];
     findAllInString(col, dictSet).forEach(w => found.add(w));
     findAllInString([...col].reverse().join(''), dictSet).forEach(w => found.add(w));
   }
+
   return found;
 }
 
@@ -11616,7 +11622,12 @@ function generateGrid() {
     if (!placed) { return generateGrid(); }
   }
 
-  // ====== FILLERS (même niveau) + anti-accident ======
+  // ✅ Ensembles pour la règle stricte (placés après le placement des mots)
+  const placedSet = new Set(selectedWords.map(w => w.chinese));
+  const allLevelWords = eligibleWords.map(w => w.chinese);
+  const forbiddenSet = new Set(allLevelWords.filter(w => !placedSet.has(w)));
+
+  // ====== FILLERS ======
   const placedWordChars = new Set();
   for (const p of gameState.wordPlacements) for (const ch of p.word) placedWordChars.add(ch);
 
@@ -11637,10 +11648,7 @@ function generateGrid() {
     }
   }
 
-  const dictAll = buildDictionarySetsAllLevels();
-  const placedSet = placedWordsSet();
-
-  function isDangerousPlacement(char, x, y, grid, placedSet, dictAll) {
+  function isDangerousPlacement(char, x, y, grid, placedSet, forbiddenSet) {
     const dirs = [[1,0],[-1,0],[0,1],[0,-1]];
     const placedPositions = getPlacedPositions();
 
@@ -11656,10 +11664,10 @@ function generateGrid() {
       const neighborKey = `${ny},${nx}`;
       const neighborIsPlaced = placedPositions.has(neighborKey);
 
-      if (dictAll.has(candidate1) && !placedSet.has(candidate1)) {
+      if (forbiddenSet.has(candidate1)) {
         if (neighborIsPlaced) return true;
       }
-      if (dictAll.has(candidate2) && !placedSet.has(candidate2)) {
+      if (forbiddenSet.has(candidate2)) {
         if (neighborIsPlaced) return true;
       }
     }
@@ -11673,7 +11681,7 @@ function generateGrid() {
         pick = allowedFillers[Math.floor(Math.random() * allowedFillers.length)];
         tries++;
         if (tries > 50) break;
-      } while (isDangerousPlacement(pick, pos.x, pos.y, grid, placedSet, dictAll));
+      } while (isDangerousPlacement(pick, pos.x, pos.y, grid, placedSet, forbiddenSet));
 
       grid[pos.y][pos.x] = pick;
     }
@@ -11684,12 +11692,12 @@ function generateGrid() {
     rollFillers();
   }
 
-  let unintended = [...scanGridForWords(grid, dictAll)].filter(w => !placedSet.has(w));
+  let unintended = [...scanGridForWords(grid, forbiddenSet)];
   let reshuffleAttempts = 0;
   while (unintended.length > 0 && reshuffleAttempts < 80) {
     reshuffleAttempts++;
     reshuffleOnlyFillers();
-    unintended = [...scanGridForWords(grid, dictAll)].filter(w => !placedSet.has(w));
+    unintended = [...scanGridForWords(grid, forbiddenSet)];
   }
   if (unintended.length > 0) {
     return generateGrid();
@@ -11702,6 +11710,7 @@ function generateGrid() {
 
   return grid;
 }
+
 
 function canPlaceWord(word, startX, startY, direction, grid) {
   const { dx, dy } = direction;
