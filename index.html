@@ -11500,6 +11500,7 @@ function revealNextWord() {
 
 /* =================== START/STOP =================== */
 function startGame() {
+  gameAborted = false; 
   const vp = document.getElementById('viewportMeta');
 
   if (vp) {
@@ -11557,6 +11558,7 @@ function startGame() {
 
 
 function showMenu() {
+  gameAborted = false;
   const vp = document.getElementById('viewportMeta');
   if (vp) {
     vp.setAttribute('content','width=device-width, initial-scale=1, user-scalable=no');
@@ -12250,11 +12252,13 @@ function clearSelection() {
 
 /* =================== POPUPS DE COMMANDE =================== */
 function showCompletionMessage() {
-  if (gameAborted) {          // ✅ si on a quitté avant la fin
-    gameAborted = false;      // reset pour la prochaine partie
-    return;                   // on annule l’affichage du popup
+  // ✅ si le joueur a quitté avant la fin, on annule
+  if (gameAborted) {
+    gameAborted = false; // on remet à zéro pour la prochaine partie
+    return;
   }
 
+  // ✅ on continue si la partie s’est vraiment terminée
   stopTimer();
   const finalTime = document.getElementById('gameTimer').textContent;
   const found = gameState.foundWords.size;
