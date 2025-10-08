@@ -21,7 +21,7 @@
   --radius:14px;
 
   --cell: clamp(40px, 7vw, 64px);
-  --gap:  clamp(6px, 1.2vw, 10px);
+  --gap:  clamp(8px, 1.5vw, 14px);
   --chip-font: clamp(18px, 2.2vw, 22px);
 
   --panel-grid-gap: clamp(18px, 3vw, 28px);
@@ -31,6 +31,9 @@
   --violet: #5B8E7D;
   --green:  #8CB369;
   --orange: #F4A259;
+
+  /* largeur externe de la grille (bordures + padding inclus) */
+  --grid-outer: calc(var(--n) * var(--cell) + (var(--n) - 1) * var(--gap) + 28px);
 }
 
 * { box-sizing:border-box; }
@@ -56,21 +59,22 @@ html,body {
 #startGame {
   width: 100%;
   margin-top: 12px !important;
-  background: var(--primary);   /* fond rouge directement */
-  color: white;                 /* texte blanc */
-  font-size: 1.2rem;            /* texte plus grand */
-  font-weight: 800;             /* texte plus gras */
-  border: none;                 /* pas de bordure grise */
-  border-radius: 12px;          /* angles plus arrondis */
-  padding: 14px 18px;           /* bouton plus haut */
-  box-shadow: 0 6px 16px rgba(0,0,0,0.15); /* ombre pour le relief */
+  background: var(--primary);
+  color: white;
+  font-size: 1.2rem;
+  font-weight: 800;
+  border: none;
+  border-radius: 12px;
+  padding: 14px 18px;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.15);
   transition: all 0.25s ease;
+  margin-bottom: 30px;
 }
-
 #startGame:hover {
-  background: var(--primary-700);  /* rouge plus foncé au survol */
-  transform: translateY(-2px);     /* petit effet de "saut" */
+  background: var(--primary-700);
+  transform: translateY(-2px);
 }
+#startGame:disabled { opacity:.5; cursor:not-allowed; }
 
 button {
   padding:10px 15px; border:1px solid #ddd; border-radius:10px;
@@ -84,12 +88,11 @@ button {
 button.selected { background:var(--primary); color:white; }
 .toggle { opacity:.7; }
 .toggle.selected { opacity:1; }
-#startGame:disabled { opacity:.5; cursor:not-allowed; }
 
 /* GAME PAGE */
 .page {
   margin:12px auto;
-  padding:0 max(16px, env(safe-area-inset-left)) 0 max(16px, env(safe-area-inset-right));
+  padding: 0 16px;
   display:flex; flex-direction:column; align-items:center; gap:12px;
   width: 100%; overflow-x:hidden;
 }
@@ -110,7 +113,7 @@ button.selected { background:var(--primary); color:white; }
 .panel {
   border-radius:var(--radius); box-shadow:var(--shadow);
   overflow:hidden; background:var(--white);
-} 
+}
 .panel-top {
   background:var(--primary); color:#fff;
   display:flex; align-items:center; justify-content:center;
@@ -145,7 +148,7 @@ button.selected { background:var(--primary); color:white; }
   font-family:"Noto Sans SC","Microsoft YaHei",sans-serif; color:#111827;
 }
 .word-chip.pending .label {
-  font-size: calc(var(--chip-font) * 1.4); 
+  font-size: calc(var(--chip-font) * 1.4);
   font-weight:700; padding:10px 14px;
   color:#111827; background:transparent;
 }
@@ -171,14 +174,11 @@ button.selected { background:var(--primary); color:white; }
   box-shadow:0 10px 24px rgba(20,32,56,.10); position:relative;
 }
 .highlight-layer {
-  position:absolute; top:12px; left:12px;
-  width:calc(100% - 24px); height:calc(100% - 24px);
-  pointer-events:none; z-index:0;
+  position:absolute; top:0; left:0;
+  width:100%; height:100%;
+  overflow:hidden; pointer-events:none; z-index:0;
 }
-.highlight {
-  position:absolute; border-radius:8px; opacity:.85; z-index:0;
-  transform: translateY(2px)
-}
+.highlight { position:absolute; border-radius:15px; z-index:0; }
 .highlight.blue   { background:var(--blue); }
 .highlight.red    { background:var(--red); }
 .highlight.violet { background:var(--violet); }
@@ -190,6 +190,9 @@ button.selected { background:var(--primary); color:white; }
   grid-template-columns:repeat(var(--n),var(--cell));
   width:fit-content;
 }
+#gridOutline { position: relative; }
+#grid { position: relative; }
+
 .cell {
   width:var(--cell); height:var(--cell);
   display:flex; align-items:center; justify-content:center;
@@ -197,9 +200,12 @@ button.selected { background:var(--primary); color:white; }
   border:none; background:transparent; border-radius:10px;
   font-weight:400; font-family:'Noto Sans SC','Microsoft YaHei',sans-serif;
   user-select:none; cursor:pointer;
+  line-height:1;
   transition:color .15s ease; -webkit-tap-highlight-color:transparent;
   position:relative; z-index:1;
 }
+#grid .cell { position: relative; z-index: 2; }
+
 .cell.selected {
   outline:2px solid var(--primary-700);
   outline-offset:-2px;
@@ -212,102 +218,53 @@ button.selected { background:var(--primary); color:white; }
 /* Footer */
 .footer {
   display: flex;
-  justify-content: center;  /* centre le bloc du timer */
-  align-items: flex-start;   /* aligne en haut */
+  justify-content: center;
+  align-items: flex-start;
   margin: 14px 0 24px;
   width: 100%;
   max-width: var(--grid-outer);
   position: relative;
 }
-
-.footer-center {
-  text-align: center;
-  flex: 1; /* prend tout l’espace dispo pour rester centré */
-}
-
+.footer-center { text-align: center; flex: 1; }
 .footer-right {
-  position: absolute;
-  right: 0;
-  top: 0;
-  display: flex;              /* centre le contenu */
-  align-items: flex-start;    /* colle le bouton en haut */
-  height: auto;               /* pas de contrainte de hauteur */
+  position: absolute; right: 0; top: 0;
+  display: flex; align-items: flex-start; height: auto;
 }
-
 .footer-bottom {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 160px; /* fixe largeur pour garder label & bouton */
+  display: flex; justify-content: space-between; align-items: center;
+  width: 160px;
 }
-
 .footer .timer, .footer .attempts {
   font-weight:900; color:#9a4e52;
   font-size:clamp(18px,2.8vw,28px);
 }
 
-.next-word-label {
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--text);
-}
-
+.next-word-label { font-size: 1rem; font-weight: 600; color: var(--text); }
 .next-word-btn {
-  border: none;
-  background: var(--primary);
-  color: white;
-  font-size: 1.3rem;      /* la flèche est grande */
-  line-height: 1;       /* empêche le bouton de s'étirer verticalement */
-  height: 40px;         /* bouton compact */
-  width: 72px;          /* largeur fixe, adaptée à la flèche */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 4px;   /* léger arrondi */
-  cursor: pointer;
+  border: none; background: var(--primary); color: white;
+  font-size: 1.3rem; line-height: 1;
+  height: 40px; width: 72px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 4px; cursor: pointer;
   box-shadow: var(--shadow);
   transition: background 0.25s ease, transform 0.15s ease;
-  font-family: Arial, sans-serif;	
-  padding: 0;           /* supprime l'espace intérieur inutile */
+  font-family: Arial, sans-serif;
+  padding: 0;
 }
-.next-word-btn:hover {
-  background: var(--primary-700);
-  transform: translateY(-2px);
-}
+.next-word-btn:hover { background: var(--primary-700); transform: translateY(-2px); }
 
-.option-label {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  margin: 0;
-  }
-
+/* Options */
+.option-label { display: inline-flex; align-items: center; gap: 8px; margin: 0; }
 .options-inline {
-  display: flex;
-  flex-wrap: wrap;        /* permet le retour à la ligne sur mobile */
-  justify-content: center; /* centre horizontalement */
-  gap: 20px;              /* espace horizontal ET vertical uniforme */
-  margin: 24px 0;         /* espace vertical autour du bloc */
-  text-align: center;
+  display: flex; flex-wrap: wrap; justify-content: center;
+  gap: 20px; margin: 24px 0; text-align: center;
 }
-
-.options-group { 
-  margin-bottom: 24px;  /* même marge en bas pour toutes les sections */
-}
-
-.options-inline { 
-  margin: 28px 0;            /* haut = bas */
-}
-
+.options-group { margin-bottom: 24px; }
+.options-inline { margin: 28px 0; }
 .option-toggles {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;   /* centré horizontalement */
-  column-gap: 24px;          /* espace horizontal entre options */
-  row-gap: 14px;             /* espace vertical entre lignes (mobile) */
+  display: flex; flex-wrap: wrap; justify-content: center;
+  column-gap: 24px; row-gap: 14px;
 }
-
-
 #nextWordButton { display: none; }
 
 /* Tooltip */
@@ -318,33 +275,20 @@ button.selected { background:var(--primary); color:white; }
   pointer-events:none; z-index:2000;
 }
 
-/* Inline validation (✔/✖) */
-.inline-validation {
-  position: absolute;
-  display: flex;
-  gap: 6px;
-  z-index: 2000;
-}
+/* Inline validation */
+.inline-validation { position: absolute; display: flex; gap: 6px; z-index: 2000; }
 .iv-btn {
-  border: none;
-  border-radius: 50%;
-  width: 34px;
-  height: 34px;
-  font-size: 18px;
-  font-weight: 700;
-  cursor: pointer;
+  border: none; border-radius: 50%; width: 34px; height: 34px;
+  font-size: 18px; font-weight: 700; cursor: pointer;
   box-shadow: var(--shadow);
   transition: transform 0.15s ease, background 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  line-height: 1;
+  display: flex; align-items: center; justify-content: center; line-height: 1;
 }
 .iv-btn.iv-yes { background: var(--green); color:white; }
 .iv-btn.iv-no  { background: var(--red); color:white; }
 .iv-btn:hover { transform: scale(1.1); }
 
-/* ✅ Unified popup */
+/* Popup */
 .popup-box {
   position: absolute;
   background: #fff;
@@ -356,125 +300,91 @@ button.selected { background:var(--primary); color:white; }
   max-width: 90vw;
   display:none;
   contain: layout paint;
-  overflow-wrap: anywhere; 
+  overflow-wrap: anywhere;
 }
-.popup-box h3 {
-  margin-top:0;
-  color:var(--primary);
-  font-weight:800;
-}
+.popup-box h3 { margin-top:0; color:var(--primary); font-weight:800; }
 .popup-box .cn {
   font-family:'Noto Sans SC','Microsoft YaHei',sans-serif;
-  font-size:42px;
-  font-weight:900;
-  color:#BC4B51;
-  line-height:1.2;
+  font-size:42px; font-weight:900; color:#BC4B51; line-height:1.2;
 }
 .popup-box .py { color:#6b7280; margin-top:8px; font-size:18px; }
-.popup-box .def { color:#000; margin-top:6px; font-size:19px; font-weight: 600 }
-
-/* Titre (Well done) */
+.popup-box .def { color:#000; margin-top:6px; font-size:19px; font-weight: 600; }
 .popup-box .completion-title {
-  font-size: 1.6rem;      /* un peu plus petit */
-  font-weight: 800;
-  color: #9a1f2d;         /* rouge foncé */
-  margin-bottom: 12px;
+  font-size: 1.6rem; font-weight: 800; color: #9a1f2d; margin-bottom: 12px;
 }
-
-/* Libellés (Timer, Attempts) */
 .popup-box .result-stat {
-  font-size: 1.1rem;      /* plus discret */
-  font-weight: 600;
-  color: #444;            /* gris foncé, plus doux que noir pur */
-  margin: 6px 0;
+  font-size: 1.1rem; font-weight: 600; color: #444; margin: 6px 0;
 }
-
-.popup-box .modal-buttons {
-  margin-top: 13px; /* augmente la marge entre la définition et le bouton */
-}
-
-/* Valeurs (01:04, 4/5) */
+.popup-box .modal-buttons { margin-top: 13px; }
 .popup-box .result-value {
-  font-size: 1.4rem;      /* moins massif */
-  font-weight: 700;
-  color: #9a1f2d;         /* toujours rouge foncé */
-  display: block;
-  margin-top: 2px;
+  font-size: 1.4rem; font-weight: 700; color: #9a1f2d;
+  display: block; margin-top: 2px;
 }
-
-
 #overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5); /* noir transparent */
-  display: none;                  /* caché par défaut */
-  z-index: 2500;                  /* juste sous les popups (z-index 3000) */
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: none; z-index: 2500;
 }
-
 .next-word-container {
-  width: 100%;
-  max-width: var(--grid-outer);
-  display: flex;
-  justify-content: flex-end; /* aligné à droite */
-  margin-top: 10px;
+  width: 100%; max-width: var(--grid-outer);
+  display: flex; justify-content: flex-end; margin-top: 10px;
 }
+.next-word-btn:hover { background: var(--primary-700); transform: translateX(3px); }
 
-
-.next-word-btn:hover {
-  background: var(--primary-700);
-  transform: translateX(3px); /* petit effet de mouvement */
-}
-
-
-/* Mobile tweaks */
-@media (max-width:520px) {
-  .panel-top { font-size:clamp(24px,6vw,40px); min-height:76px; }
-  :root { --cell:clamp(36px,10vw,56px); --gap:clamp(5px,2vw,9px); }
-}
-
-/* Grid width calc */
-:root { --grid-outer: calc(var(--n) * var(--cell) + (var(--n) - 1) * var(--gap) + 28px); }
 @media (min-width:1025px) {
-  #backBar,#panel,#gridWrap,#footerBar { width:var(--grid-outer); margin-left: auto;
-    margin-right: auto; }
+  #backBar,#panel,#gridWrap,#footerBar {
+    width:var(--grid-outer);
+    margin-left: auto; margin-right: auto;
+  }
+  #startGame { margin-bottom: 30px; }
 }
 @media (max-width:1024px) {
   #backBar,#panel,#gridWrap,#footerBar { width:var(--grid-outer); }
 }
-/* ✅ Agrandir les popups et texte sur mobile */
-@media (max-width: 520px) {
+
+/* === Version 1 : largeur fixe commune sur mobile === */
+@media (max-width:520px) {
+  /* Taille du titre en haut */
+  .panel-top { 
+    font-size: clamp(24px,6vw,40px); 
+    min-height: 76px; 
+  }
+
+  /* Variables cellule + espacement */
+  :root { 
+    --cell: clamp(36px,10vw,56px); 
+    --gap: clamp(5px,2vw,9px); 
+  }
+
+  /* Popup adaptée au mobile */
   .popup-box {
-    padding: 26px 22px;       /* un peu plus d'espace intérieur */
-    max-width: 95vw;          /* occupe presque toute la largeur */
+    padding: 26px 22px; 
+    max-width: 95vw;
   }
-  .popup-box .cn {
-    font-size: 56px;          /* caractère chinois plus grand */
+  .popup-box .cn { font-size: 56px; }
+  .popup-box .py { font-size: 22px; }
+  .popup-box .def { font-size: 24px; }
+  .popup-box .completion-title { font-size: 2rem; }
+  .popup-box .result-stat { font-size: 1.4rem; }
+  .popup-box .result-value { font-size: 1.8rem; }
+
+  /* ✅ Décalage global vers la gauche */
+  body {
+    overflow-x: auto; /* autorise un léger scroll horizontal */
   }
-  .popup-box .py {
-    font-size: 22px;          /* pinyin plus grand */
+
+  #gameScreen {
+    padding-left: 10px;   /* décale tous les éléments vers la gauche */
+    box-sizing: border-box;
   }
-  .popup-box .def {
-    font-size: 24px;          /* définition plus grande */
-  }
-  .popup-box .completion-title {
-    font-size: 2rem;          /* titre de la feuille de score */
-  }
-  .popup-box .result-stat {
-    font-size: 1.4rem;        /* libellés Timer/Attempts */
-  }
-  .popup-box .result-value {
-    font-size: 1.8rem;        /* valeurs (temps, score) */
+
+  /* ✅ Exception : pas de décalage si grille 13x13 */
+  #gameScreen:has(.grid[style*="--n:13"]) {
+    padding-left: 0;
   }
 }
 
-@media (min-width:1025px) {
-  #startGame {
-    margin-bottom: 30px; /* espace sous le bouton */
-  }
-}
+
 
 @media (hover: none), (pointer: coarse) {
   #pinyinTooltip {
@@ -485,6 +395,12 @@ button.selected { background:var(--primary); color:white; }
   }
 }
 
+/* Ajustement cell */
+#grid .cell {
+  font-size: calc(var(--cell) * 0.65) !important;
+  line-height: 1 !important;
+}
+
 </style>
 </head>
 <body>
@@ -493,8 +409,7 @@ button.selected { background:var(--primary); color:white; }
 <div class="container">
   <!-- MENU -->
   <div class="menu" id="menuScreen">
-    <h1>中文 Word Search</h1>
-    <div class="options-group">
+       <div class="options-group">
       <h2>HSK Level</h2>
       <div class="options-buttons" id="hskLevelButtons">
         <button data-level="1" class="toggle selected">HSK 1</button>
@@ -514,7 +429,14 @@ button.selected { background:var(--primary); color:white; }
         <button data-mode="pinyin">Pinyin</button>
       </div>
     </div>
-    <div class="options-group">
+	<div class="options-group">
+  <h2>Search Directions</h2>
+  <div class="options-buttons" id="searchDirectionButtons">
+    <button data-direction="normal" class="selected">Normal</button>
+    <button data-direction="expert">Expert</button>
+  </div>
+</div>
+	    <div class="options-group">
       <h2>Grid size</h2>
       <div class="options-buttons" id="gridSizeButtons">
         <button data-size="5" class="selected">5x5</button>
@@ -565,6 +487,7 @@ button.selected { background:var(--primary); color:white; }
     <button id="nextWordButton" class="next-word-btn">Next</button> </div>
 </div>
 </div>
+
 
 <!-- Inline validation -->
 <div id="inlineValidation" class="inline-validation" style="display:none;">
@@ -11074,12 +10997,19 @@ const GRID_CONFIGS = {
   '11': { size: 11, wordCount: 18 },
   '13': { size: 13, wordCount: 24 }
 };
-const DIRECTIONS = [
+const DIRECTIONS_BASE = [
   { dx: 1,  dy: 0,  name: 'horizontal' },
   { dx: -1, dy: 0,  name: 'horizontal-rev' },
   { dx: 0,  dy: 1,  name: 'vertical' },
   { dx: 0,  dy: -1, name: 'vertical-rev' }
 ];
+const DIRECTIONS_DIAGONAL = [
+  { dx: 1,  dy: 1,  name: 'diagonal-down-right' },
+  { dx: -1, dy: -1, name: 'diagonal-up-left' },
+  { dx: 1,  dy: -1, name: 'diagonal-up-right' },
+  { dx: -1, dy: 1,  name: 'diagonal-down-left' }
+];
+const ALL_DIRECTIONS = [...DIRECTIONS_BASE, ...DIRECTIONS_DIAGONAL];
 
 const gameState = {
   mode: 'no_hint',
@@ -11098,7 +11028,43 @@ const gameState = {
   attempts: 0
 };
 
+// offsets par direction
+const offsets = {
+  "horizontal":       {x:0,y:0},
+  "horizontal-rev":   {x:0,y:0},
+  "vertical":         {x:-2,y:0},
+  "vertical-rev":     {x:-2,y:0},
+  "diagonal-down-right": {x:-1,y:0},
+  "diagonal-up-left":    {x:-2,y:0},
+  "diagonal-up-right":   {x:2,y:0},
+  "diagonal-down-left":  {x:-1,y:0},
+};
+
 let popupAutoHide = null;
+
+let gameAborted = false;
+
+
+let gameMode = "no_hint";
+
+let searchDirection = "normal"; // ✅ par défaut
+
+document.querySelectorAll("#searchDirectionButtons button").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll("#searchDirectionButtons button")
+      .forEach(b => b.classList.remove("selected"));
+    btn.classList.add("selected");
+    searchDirection = btn.dataset.direction;
+  });
+});
+
+
+function getDirections() {
+  if (searchDirection === "expert") {
+    return [...DIRECTIONS_BASE, ...DIRECTIONS_DIAGONAL];
+  }
+  return DIRECTIONS_BASE;
+}
 
 
 /* =================== UTIL & DICTS =================== */
@@ -11138,7 +11104,7 @@ function placedWordsSet() { return new Set(gameState.wordPlacements.map(p => p.w
 function getPlacedPositions() {
   const pos = new Set();
   for (const placement of gameState.wordPlacements) {
-    const dir = DIRECTIONS.find(d => d.name === placement.direction);
+    const dir = ALL_DIRECTIONS.find(d => d.name === placement.direction);
     for (let i = 0; i < placement.word.length; i++) {
       const row = placement.start.y + dir.dy * i;
       const col = placement.start.x + dir.dx * i;
@@ -11161,14 +11127,14 @@ function scanGridForWords(grid, dictSet) {
   const found = new Set();
   const N = grid.length;
 
-  // lignes
+  // 🔹 lignes
   for (let r = 0; r < N; r++) {
     const row = grid[r].join('');
     findAllInString(row, dictSet).forEach(w => found.add(w));
     findAllInString([...row].reverse().join(''), dictSet).forEach(w => found.add(w));
   }
 
-  // colonnes
+  // 🔹 colonnes
   for (let c = 0; c < N; c++) {
     let col = '';
     for (let r = 0; r < N; r++) col += grid[r][c];
@@ -11176,8 +11142,38 @@ function scanGridForWords(grid, dictSet) {
     findAllInString([...col].reverse().join(''), dictSet).forEach(w => found.add(w));
   }
 
+  // 🔹 diagonales (si Expert seulement)
+  if (searchDirection === "expert") {
+    // ↘ diagonales principales
+    for (let k = -(N - 1); k <= N - 1; k++) {
+      let diag = '';
+      for (let r = 0; r < N; r++) {
+        const c = r + k;
+        if (c >= 0 && c < N) diag += grid[r][c];
+      }
+      if (diag.length >= 2) {
+        findAllInString(diag, dictSet).forEach(w => found.add(w));
+        findAllInString([...diag].reverse().join(''), dictSet).forEach(w => found.add(w));
+      }
+    }
+
+    // ↗ diagonales secondaires
+    for (let k = 0; k <= 2 * (N - 1); k++) {
+      let diag = '';
+      for (let r = 0; r < N; r++) {
+        const c = k - r;
+        if (c >= 0 && c < N) diag += grid[r][c];
+      }
+      if (diag.length >= 2) {
+        findAllInString(diag, dictSet).forEach(w => found.add(w));
+        findAllInString([...diag].reverse().join(''), dictSet).forEach(w => found.add(w));
+      }
+    }
+  }
+
   return found;
 }
+
 
 /* =================== POPUP UNIQUE (centré sur la grille) =================== */
 function centerPopupOnGrid() {
@@ -11388,6 +11384,7 @@ function initializeGame() {
 
   // Retour menu
   document.getElementById('backToMenu').addEventListener('click', () => {
+    gameAborted = true;
     stopTimer();
     showMenu();
   });
@@ -11506,7 +11503,7 @@ function startGame() {
   const vp = document.getElementById('viewportMeta');
 
   if (vp) {
-    // Par défaut (PC)
+    // Par défaut (desktop)
     let viewportContent = "width=device-width, initial-scale=1, user-scalable=no";
 
     if (window.innerWidth <= 1024) {
@@ -11519,17 +11516,20 @@ function startGame() {
         case 11: scale = 0.5;  break;
         case 13: scale = 0.4;  break;
       }
-      viewportContent = `width=1024, initial-scale=${scale}, minimum-scale=0.1, maximum-scale=5, user-scalable=yes`;
+      viewportContent =
+        `width=1024, initial-scale=${scale}, minimum-scale=0.1, maximum-scale=5, user-scalable=yes`;
     }
 
     vp.setAttribute("content", viewportContent);
   }
 
+  // cache menu / montre écran de jeu
   document.getElementById('menuScreen').style.display = 'none';
   document.getElementById('gameScreen').style.display = 'block';
 
   applyGridSizeCSS();
 
+  // réinitialise l’état
   gameState.foundWords.clear();
   gameState.foundOrder = [];
   gameState.selectedCells = [];
@@ -11541,11 +11541,20 @@ function startGame() {
   document.getElementById('gameTimer').textContent = '00:00';
   startTimer();
 
+  // rend la grille et la barre des mots
   renderGrid();
   renderWordsBar();
 
-  document.getElementById('gridTitle').textContent = `${gameState.wordsToFind.length} WORDS`;
+  document.getElementById('gridTitle').textContent =
+    `${gameState.wordsToFind.length} WORDS`;
+
+  // synchronise panel et footer avec la largeur réelle de la grille
+  syncPanelWidthToGrid();
+  syncPanelWithGrid();
 }
+
+
+
 
 function showMenu() {
   const vp = document.getElementById('viewportMeta');
@@ -11611,7 +11620,8 @@ function generateGrid() {
     while (!placed && attempts < maxAttempts) {
       const x = Math.floor(Math.random() * gameState.gridSize);
       const y = Math.floor(Math.random() * gameState.gridSize);
-      const direction = DIRECTIONS[Math.floor(Math.random() * DIRECTIONS.length)];
+      const allowedDirs = (searchDirection === 'expert') ? ALL_DIRECTIONS : DIRECTIONS_BASE;
+	  const direction = allowedDirs[Math.floor(Math.random() * allowedDirs.length)];
       if (canPlaceWord(word.chinese, x, y, direction, grid)) {
         placeWord(word.chinese, x, y, direction, grid);
         gameState.wordsToFind.push(word);
@@ -11707,6 +11717,19 @@ function generateGrid() {
     console.warn("⚠️ Tous les mots n'ont pas été placés, on relance la génération...");
     return generateGrid();
   }
+  // ✅ Vérification proportion diagonales en mode expert
+if (searchDirection === "expert") {
+  const total = gameState.wordPlacements.length;
+  const diagCount = gameState.wordPlacements.filter(p => 
+    p.direction.includes("diagonal")
+  ).length;
+
+  const ratio = diagCount / total;
+  if (ratio < 0.25 || ratio > 0.75) {
+    console.warn(`⚠️ Trop de / pas assez de diagonales (${diagCount}/${total}), on relance...`);
+    return generateGrid();
+  }
+}
 
   return grid;
 }
@@ -11739,6 +11762,11 @@ function renderGrid() {
   document.documentElement.style.setProperty('--n', gameState.gridSize);
   gridEl.innerHTML = '';
 
+  // utilise le layer défini dans le HTML sous #gridOutline
+  const layer = document.querySelector('#gridOutline .highlight-layer');
+  if (layer) layer.innerHTML = '';
+
+  // ✅ Construire la grille
   gameState.currentGrid.forEach((row, i) => {
     row.forEach((cell, j) => {
       const d = document.createElement('div');
@@ -11748,7 +11776,7 @@ function renderGrid() {
       d.dataset.col = j;
       gridEl.appendChild(d);
 
-      // tooltips pinyin
+      // Tooltip pinyin au survol
       d.addEventListener('mouseenter', (e) => {
         if (!gameState.showPinyin) return;
         const char = e.target.textContent;
@@ -11785,38 +11813,33 @@ function renderGrid() {
     });
   });
 
+  // Ajustement UI
   syncPanelWidthToGrid();
   syncPanelWithGrid();
   updateFoundCellsColoring();
 }
 
+
 function syncPanelWidthToGrid() {
   const outline = document.getElementById('gridOutline');
   const panel   = document.getElementById('panel');
   if (!outline || !panel) return;
-
-  const outlineWidth = outline.offsetWidth;
-  panel.style.width = outlineWidth + "px";
+  panel.style.width = outline.offsetWidth + "px";
 }
+
 
 function syncPanelWithGrid() {
   const gridOutline = document.getElementById('gridOutline');
   const backBar = document.getElementById('backBar');
   const panel = document.getElementById('panel');
   const footer = document.getElementById('footerBar');
-
   if (!gridOutline) return;
-
   const gridWidth = gridOutline.offsetWidth;
 
   if (window.innerWidth > 1024) {
-    [backBar, panel, footer].forEach(el => {
-      if (el) el.style.width = gridWidth + "px";
-    });
+    [backBar, panel, footer].forEach(el => { if (el) el.style.width = gridWidth + "px"; });
   } else {
-    [backBar, panel, footer].forEach(el => {
-      if (el) el.style.width = "";
-    });
+    [backBar, panel, footer].forEach(el => { if (el) el.style.width = ""; });
   }
 }
 
@@ -11889,7 +11912,7 @@ function updateFoundCellsColoring() {
   });
 }
 function applyTextWhite(placement) {
-  const dir = DIRECTIONS.find(d => d.name === placement.direction);
+  const dir = ALL_DIRECTIONS.find(d => d.name === placement.direction);
   if (!dir) return;
   for (let i = 0; i < placement.word.length; i++) {
     const row = placement.start.y + dir.dy * i;
@@ -11898,11 +11921,52 @@ function applyTextWhite(placement) {
     if (cell) cell.classList.add('is-highlighted');
   }
 }
-function markPlacementCells(placement, colorClass) {
-  const layer = document.querySelector('.highlight-layer');
-  if (!layer) return;
 
-  const dir = DIRECTIONS.find(d => d.name === placement.direction);
+// offsets globaux pour tester en live
+let globalOffsetX = 0;
+let globalOffsetY = 0;
+
+
+
+
+function bindOffsetSlider(direction, axis, sliderId, labelId) {
+  const slider = document.getElementById(sliderId);
+  const label  = document.getElementById(labelId);
+  if (!slider) return;                   // ✅ ne plante pas si absent
+  slider.addEventListener("input", e => {
+    offsets[direction][axis] = parseInt(e.target.value, 10) || 0;
+    if (label) label.textContent = offsets[direction][axis];
+    updateFoundCellsColoring();          // redessine les rectangles
+  });
+}
+
+// ⚙️ Lancer le câblage des sliders une fois le DOM prêt
+document.addEventListener('DOMContentLoaded', () => {
+  bindOffsetSlider("horizontal","x","offset-horiz-x","val-horiz-x");
+  bindOffsetSlider("horizontal","y","offset-horiz-y","val-horiz-y");
+  bindOffsetSlider("horizontal-rev","x","offset-horizrev-x","val-horizrev-x");
+  bindOffsetSlider("horizontal-rev","y","offset-horizrev-y","val-horizrev-y");
+  bindOffsetSlider("vertical","x","offset-vert-x","val-vert-x");
+  bindOffsetSlider("vertical","y","offset-vert-y","val-vert-y");
+  bindOffsetSlider("vertical-rev","x","offset-vertrev-x","val-vertrev-x");
+  bindOffsetSlider("vertical-rev","y","offset-vertrev-y","val-vertrev-y");
+  bindOffsetSlider("diagonal-down-right","x","offset-diagdr-x","val-diagdr-x");
+  bindOffsetSlider("diagonal-down-right","y","offset-diagdr-y","val-diagdr-y");
+  bindOffsetSlider("diagonal-up-left","x","offset-diagul-x","val-diagul-x");
+  bindOffsetSlider("diagonal-up-left","y","offset-diagul-y","val-diagul-y");
+  bindOffsetSlider("diagonal-up-right","x","offset-diagur-x","val-diagur-x");
+  bindOffsetSlider("diagonal-up-right","y","offset-diagur-y","val-diagur-y");
+  bindOffsetSlider("diagonal-down-left","x","offset-diagdl-x","val-diagdl-x");
+  bindOffsetSlider("diagonal-down-left","y","offset-diagdl-y","val-diagdl-y");
+});
+
+
+function markPlacementCells(placement, colorClass) {
+  const outline = document.getElementById('gridOutline');
+  const layer   = outline ? outline.querySelector('.highlight-layer') : null;
+  if (!outline || !layer) return;
+
+  const dir = ALL_DIRECTIONS.find(d => d.name === placement.direction);
   if (!dir) return;
 
   const startRow = placement.start.y;
@@ -11914,30 +11978,77 @@ function markPlacementCells(placement, colorClass) {
   const endEl   = document.querySelector(`[data-row="${endRow}"][data-col="${endCol}"]`);
   if (!startEl || !endEl) return;
 
+  const rg = outline.getBoundingClientRect();
   const r1 = startEl.getBoundingClientRect();
   const r2 = endEl.getBoundingClientRect();
-  const rl = layer.getBoundingClientRect();
 
-  let left   = Math.min(r1.left, r2.left) - rl.left;
-  let top    = Math.min(r1.top,  r2.top)  - rl.top;
-  let width  = Math.abs(r2.left - r1.left) + r1.width;
-  let height = Math.abs(r2.top  - r1.top)  + r1.height;
+  const cellW = r1.width;
+  const cellH = r1.height;
+  const thicknessFactor = 0.85;
 
-  if (dir.dx !== 0 && dir.dy === 0) { // horizontal
-    height = r1.height;
+  // ✅ offsets spécifiques à la direction
+  const o = offsets[dir.name] || {x:0,y:0};
+
+  // --- HORIZONTAL ---
+  if (dir.dy === 0 && dir.dx !== 0) {
+    const width  = Math.abs(r2.left - r1.left) + cellW;
+    const height = cellH * thicknessFactor;
+    const left   = Math.min(r1.left, r2.left) - rg.left + o.x;
+    const top    = r1.top - rg.top + (cellH - height) / 2 + o.y;
+
+    const hl = document.createElement('div');
+    hl.className = `highlight ${colorClass}`;
+    hl.style.left   = left + 'px';
+    hl.style.top    = top  + 'px';
+    hl.style.width  = width + 'px';
+    hl.style.height = height + 'px';
+    hl.style.pointerEvents = "none";
+    layer.appendChild(hl);
+    return;
   }
-  if (dir.dy !== 0 && dir.dx === 0) { // vertical
-    width = r1.width;
+
+  // --- VERTICAL ---
+  if (dir.dx === 0 && dir.dy !== 0) {
+    const width  = cellW * thicknessFactor;
+    const height = Math.abs(r2.top - r1.top) + cellH;
+    const left   = r1.left - rg.left + (cellW - width) / 2 + o.x;
+    const top    = Math.min(r1.top, r2.top) - rg.top + o.y;
+
+    const hl = document.createElement('div');
+    hl.className = `highlight ${colorClass}`;
+    hl.style.left   = left + 'px';
+    hl.style.top    = top  + 'px';
+    hl.style.width  = width + 'px';
+    hl.style.height = height + 'px';
+    hl.style.pointerEvents = "none";
+    layer.appendChild(hl);
+    return;
   }
+
+  // --- DIAGONALES ---
+  const x1 = r1.left - rg.left + cellW / 2;
+  const y1 = r1.top  - rg.top  + cellH / 2;
+  const x2 = r2.left - rg.left + cellW / 2;
+  const y2 = r2.top  - rg.top  + cellH / 2;
+
+  const length = Math.hypot(x2 - x1, y2 - y1) + Math.max(cellW, cellH);
+  const angle  = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
+
+  const bandThickness = cellH * thicknessFactor;
 
   const hl = document.createElement('div');
   hl.className = `highlight ${colorClass}`;
-  hl.style.left   = left   + 'px';
-  hl.style.top    = top    + 'px';
-  hl.style.width  = width  + 'px';
-  hl.style.height = height + 'px';
+  hl.style.width  = length + 'px';
+  hl.style.height = bandThickness + 'px';
+  hl.style.left   = ((x1 + x2) / 2 - length / 2 + o.x) + 'px';
+  hl.style.top    = ((y1 + y2) / 2 - bandThickness / 2 + o.y) + 'px';
+  hl.style.transformOrigin = 'center';
+  hl.style.transform = `rotate(${angle}deg)`;
+  hl.style.pointerEvents = "none";
   layer.appendChild(hl);
 }
+
+
 
 /* =================== INLINE VALIDATION =================== */
 function hideInlineValidation() {
@@ -12014,14 +12125,17 @@ function handleCellClick(row, col) {
   }
 
   const dx = Math.sign(col - start.col);
-  const dy = Math.sign(row - start.row);
-  if (dx !== 0 && dy !== 0) {
-    clearSelection();
-    hideInlineValidation();
-    gameState.selectedCells = [{ row, col }];
-    cell.classList.add('selected');
-    return;
-  }
+const dy = Math.sign(row - start.row);
+const isDiagonal = (dx !== 0 && dy !== 0);
+
+// Diagonale interdite en "normal", autorisée en "expert"
+if (isDiagonal && searchDirection !== 'expert') {
+  clearSelection();
+  hideInlineValidation();
+  gameState.selectedCells = [{ row, col }];
+  cell.classList.add('selected');
+  return;
+}
 
   const cellsBetween = getCellsBetween(start, { row, col });
   document.querySelectorAll('.cell.selected').forEach(c => c.classList.remove('selected'));
@@ -12055,9 +12169,31 @@ function validateSelection() {
   const reverseSelectedWord = selectedWord.split('').reverse().join('');
   if ([selectedWord, reverseSelectedWord].some(w => gameState.foundWords.has(w))) return false;
 
-  const foundPlacement = gameState.wordPlacements.find(
-    p => p.word === selectedWord || p.word === reverseSelectedWord
-  );
+  // récupère les positions sélectionnées
+  const selectedCoords = gameState.selectedCells.map(c => `${c.row},${c.col}`);
+
+  const foundPlacement = gameState.wordPlacements.find(p => {
+    if (p.word !== selectedWord && p.word !== reverseSelectedWord) return false;
+
+    const dir = ALL_DIRECTIONS.find(d => d.name === p.direction);
+    if (!dir) return false;
+
+    const coords = [];
+    for (let i = 0; i < p.word.length; i++) {
+      const row = p.start.y + dir.dy * i;
+      const col = p.start.x + dir.dx * i;
+      coords.push(`${row},${col}`);
+    }
+
+    // 🔹 Comparaison directe OU inversée
+    return (
+      coords.length === selectedCoords.length &&
+      (
+        coords.every((c, i) => c === selectedCoords[i]) ||
+        coords.slice().reverse().every((c, i) => c === selectedCoords[i])
+      )
+    );
+  });
 
   if (foundPlacement) {
     const foundWord = gameState.wordsToFind.find(w => w.chinese === foundPlacement.word);
@@ -12065,7 +12201,7 @@ function validateSelection() {
       gameState.foundWords.add(foundWord.chinese);
       const idx = gameState.wordsToFind.findIndex(w => w.chinese === foundWord.chinese);
       if (!gameState.foundOrder.includes(idx)) gameState.foundOrder.push(idx);
-      return foundWord; // ✅ on retourne l’objet mot trouvé
+      return foundWord;
     }
   }
 
@@ -12114,6 +12250,11 @@ function clearSelection() {
 
 /* =================== POPUPS DE COMMANDE =================== */
 function showCompletionMessage() {
+  if (gameAborted) {          // ✅ si on a quitté avant la fin
+    gameAborted = false;      // reset pour la prochaine partie
+    return;                   // on annule l’affichage du popup
+  }
+
   stopTimer();
   const finalTime = document.getElementById('gameTimer').textContent;
   const found = gameState.foundWords.size;
@@ -12132,29 +12273,6 @@ function openWordModal(word) {
     translation: word.translation, // toujours présent
     closable: true
   });
-}
-
-let currentWordIndex = -1;
-
-
-// ✅ Brancher l’événement une fois la page chargée
-document.addEventListener("DOMContentLoaded", () => {
-  const btn = document.getElementById("nextWordButton");
-  if (btn) btn.addEventListener("click", showNextWord);
-});
-
-function showNextWord() {
-  // avancer dans la liste sans déclencher une double validation
-  if (gameState.currentWordIndex < gameState.words.length - 1) {
-    gameState.currentWordIndex++;
-    const next = gameState.words[gameState.currentWordIndex];
-
-    // mettre à jour le label du prochain mot (si tu en as un affichage)
-    const nextLabel = document.getElementById("nextWordLabel");
-    if (nextLabel) nextLabel.textContent = next.chinese;
-
-    // pas de popup ici ! juste avancer
-  }
 }
 
 /* =================== TIMER & FOOTER =================== */
